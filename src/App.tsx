@@ -392,7 +392,31 @@ export default function App() {
     </div>
   );
 
-  const renderStudy = () => <StudyMode onBack={() => setView('dashboard')} questions={filteredQuestions} />;
+  const renderStudy = () => <StudyMode onBack={() => setView('dashboard')} questions={filteredQuestions} onCardAction={(subject, isCorrect) => {
+    setStats(prev => {
+      const newSubjectStats = { ...prev.subjectStats };
+      const newSubjectScores = { ...prev.subjectScores };
+
+      const existing = newSubjectStats[subject] || { attempted: 0, correct: 0 };
+      const updated = {
+        attempted: existing.attempted + 1,
+        correct: existing.correct + (isCorrect ? 1 : 0)
+      };
+      
+      newSubjectStats[subject] = updated;
+      newSubjectScores[subject] = Math.round((updated.correct / updated.attempted) * 100);
+
+      return {
+        ...prev,
+        totalAttempted: prev.totalAttempted + 1,
+        totalCorrect: prev.totalCorrect + (isCorrect ? 1 : 0),
+        points: prev.points + (isCorrect ? 5 : 2), // Earn a bit of XP for studying
+        lastActive: new Date().toISOString(),
+        subjectStats: newSubjectStats,
+        subjectScores: newSubjectScores
+      };
+    });
+  }} />;
   const renderQuiz = () => <QuizModeView onBack={() => setView('dashboard')} questions={filteredQuestions} onFinish={(correct, subjectSummary) => {
     setStats(prev => {
       const newSubjectStats = { ...prev.subjectStats };
@@ -698,11 +722,34 @@ export default function App() {
 
 // --- Study Mode ---
 
-function StudyMode({ onBack, questions }: { onBack: () => void, questions: Question[] }) {
+function StudyMode({ 
+  onBack, 
+  questions, 
+  onCardAction 
+}: { 
+  onBack: () => void, 
+  questions: Question[], 
+  onCardAction: (subject: string, isCorrect: boolean) => void 
+}) {
   const [index, setIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
+  const [sessionFinished, setSessionFinished] = useState<Set<string>>(new Set());
 
   const current = questions[index];
+
+  const handleAction = (isCorrect: boolean) => {
+    if (!sessionFinished.has(current.id)) {
+      onCardAction(current.subject, isCorrect);
+      setSessionFinished(prev => new Set(prev).add(current.id));
+    }
+    
+    if (index < questions.length - 1) {
+      setIndex(i => i + 1);
+      setFlipped(false);
+    } else {
+      onBack(); // End session if it's the last card
+    }
+  };
 
   if (!current) return (
     <div className="flex flex-col items-center justify-center py-20 text-center space-y-4">
@@ -761,29 +808,59 @@ function StudyMode({ onBack, questions }: { onBack: () => void, questions: Quest
         </div>
       </div>
 
-      <div className="flex gap-4 max-w-2xl mx-auto">
-        <button 
-          disabled={index === 0}
-          onClick={(e) => {
-            e.stopPropagation();
-            setIndex(i => i - 1);
-            setFlipped(false);
-          }}
-          className="flex-1 btn-secondary group flex items-center justify-center gap-2"
-        >
-          <ChevronRight className="w-5 h-5 rotate-180 transition-transform group-hover:-translate-x-1" /> Previous
-        </button>
-        <button 
-          disabled={index === questions.length - 1}
-          onClick={(e) => {
-            e.stopPropagation();
-            setIndex(i => i + 1);
-            setFlipped(false);
-          }}
-          className="flex-1 btn-primary group flex items-center justify-center gap-2"
-        >
-          Next Card <ChevronRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
-        </button>
+      <div className="flex flex-col gap-4 max-w-2xl mx-auto">
+        <AnimatePresence mode="wait">
+          {flipped && (
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              className="grid grid-cols-2 gap-4"
+            >
+              <button 
+                onClick={(e) => { e.stopPropagation(); handleAction(true); }}
+                className="p-4 bg-emerald-500 text-white rounded-2xl font-bold hover:bg-emerald-600 transition-all flex flex-col items-center gap-1 shadow-lg shadow-emerald-500/20"
+              >
+                <CheckCircle2 className="w-6 h-6" />
+                <span className="text-xs uppercase tracking-widest">I Know This</span>
+              </button>
+              <button 
+                onClick={(e) => { e.stopPropagation(); handleAction(false); }}
+                className="p-4 bg-slate-800 text-white rounded-2xl font-bold hover:bg-slate-900 transition-all flex flex-col items-center gap-1 shadow-lg"
+              >
+                <AlertCircle className="w-6 h-6" />
+                <span className="text-xs uppercase tracking-widest">Still Learning</span>
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <div className="flex gap-4">
+          <button 
+            disabled={index === 0}
+            onClick={(e) => {
+              e.stopPropagation();
+              setIndex(i => i - 1);
+              setFlipped(false);
+            }}
+            className="flex-1 btn-secondary group flex items-center justify-center gap-2"
+          >
+            <ChevronRight className="w-5 h-5 rotate-180 transition-transform group-hover:-translate-x-1" /> Previous
+          </button>
+          {!flipped && (
+            <button 
+              disabled={index === questions.length - 1}
+              onClick={(e) => {
+                e.stopPropagation();
+                setIndex(i => i + 1);
+                setFlipped(false);
+              }}
+              className="flex-1 btn-primary group flex items-center justify-center gap-2"
+            >
+              Next Card <ChevronRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
