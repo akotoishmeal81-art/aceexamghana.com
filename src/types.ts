@@ -20,7 +20,8 @@ export interface UserStats {
   streak: number;
   points: number;
   lastActive: string; // ISO date
-  subjectScores: Record<string, number>;
+  subjectScores: Record<string, number>; // Mastery percentage per subject
+  subjectStats: Record<string, { attempted: number, correct: number }>;
 }
 
 export type QuizMode = 5 | 10 | 20;

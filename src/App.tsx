@@ -71,8 +71,13 @@ export default function App() {
     const saved = localStorage.getItem('ace_exams_stats');
     if (saved) {
       const parsed = JSON.parse(saved);
-      // Ensure points exists for older local data
-      return { ...parsed, points: parsed.points || 0 };
+      // Ensure points and subjectStats exist for older local data
+      return { 
+        ...parsed, 
+        points: parsed.points || 0,
+        subjectStats: parsed.subjectStats || {},
+        subjectScores: parsed.subjectScores || {}
+      };
     }
     return {
       totalAttempted: 0,
@@ -80,7 +85,8 @@ export default function App() {
       streak: 0,
       points: 0,
       lastActive: new Date().toISOString(),
-      subjectScores: {}
+      subjectScores: {},
+      subjectStats: {}
     };
   });
 
@@ -387,15 +393,32 @@ export default function App() {
   );
 
   const renderStudy = () => <StudyMode onBack={() => setView('dashboard')} questions={filteredQuestions} />;
-  const renderQuiz = () => <QuizModeView onBack={() => setView('dashboard')} questions={filteredQuestions} onFinish={(correct) => {
-    setStats(prev => ({
-      ...prev,
-      totalAttempted: prev.totalAttempted + filteredQuestions.length,
-      totalCorrect: prev.totalCorrect + correct,
-      points: prev.points + (correct * 10),
-      streak: prev.streak + 1, // Simple streak tracking
-      lastActive: new Date().toISOString()
-    }));
+  const renderQuiz = () => <QuizModeView onBack={() => setView('dashboard')} questions={filteredQuestions} onFinish={(correct, subjectSummary) => {
+    setStats(prev => {
+      const newSubjectStats = { ...prev.subjectStats };
+      const newSubjectScores = { ...prev.subjectScores };
+
+      Object.entries(subjectSummary).forEach(([subject, data]) => {
+        const existing = newSubjectStats[subject] || { attempted: 0, correct: 0 };
+        const updated = {
+          attempted: existing.attempted + data.attempted,
+          correct: existing.correct + data.correct
+        };
+        newSubjectStats[subject] = updated;
+        newSubjectScores[subject] = Math.round((updated.correct / updated.attempted) * 100);
+      });
+
+      return {
+        ...prev,
+        totalAttempted: prev.totalAttempted + filteredQuestions.length,
+        totalCorrect: prev.totalCorrect + correct,
+        points: prev.points + (correct * 10),
+        streak: prev.streak + 1, // Simple streak tracking
+        lastActive: new Date().toISOString(),
+        subjectStats: newSubjectStats,
+        subjectScores: newSubjectScores
+      };
+    });
   }} />;
 
   const handleAuthSubmit = async (e: React.FormEvent) => {
@@ -410,7 +433,8 @@ export default function App() {
           streak: 0,
           points: 0,
           lastActive: new Date().toISOString(),
-          subjectScores: {}
+          subjectScores: {},
+          subjectStats: {}
         };
         await saveUserProgress(newUser.uid, freshStats);
         setStats(freshStats);
@@ -767,7 +791,11 @@ function StudyMode({ onBack, questions }: { onBack: () => void, questions: Quest
 
 // --- Quiz Mode ---
 
-function QuizModeView({ onBack, questions, onFinish }: { onBack: () => void, questions: Question[], onFinish: (correct: number) => void }) {
+function QuizModeView({ onBack, questions, onFinish }: { 
+  onBack: () => void, 
+  questions: Question[], 
+  onFinish: (correct: number, subjectSummary: Record<string, { attempted: number, correct: number }>) => void 
+}) {
   const [step, setStep] = useState<'config' | 'running' | 'results'>('config');
   const [quizQuestions, setQuizQuestions] = useState<Question[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -789,7 +817,19 @@ function QuizModeView({ onBack, questions, onFinish }: { onBack: () => void, que
   const next = () => {
     if (currentIndex === quizQuestions.length - 1) {
       const correct = quizQuestions.filter(q => answers[q.id] === q.correct_answer).length;
-      onFinish(correct);
+      
+      const subjectSummary: Record<string, { attempted: number, correct: number }> = {};
+      quizQuestions.forEach(q => {
+        if (!subjectSummary[q.subject]) {
+          subjectSummary[q.subject] = { attempted: 0, correct: 0 };
+        }
+        subjectSummary[q.subject].attempted += 1;
+        if (answers[q.id] === q.correct_answer) {
+          subjectSummary[q.subject].correct += 1;
+        }
+      });
+
+      onFinish(correct, subjectSummary);
       setStep('results');
     } else {
       setCurrentIndex(i => i + 1);
@@ -1051,6 +1091,48 @@ function StatsView({ user, stats, onBack }: { user: User | null, stats: UserStat
               </motion.div>
             );
           })}
+        </div>
+      </div>
+
+      <div className="space-y-6">
+        <h2 className="text-2xl font-bold text-slate-800">Subject Mastery</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {Object.entries(stats.subjectStats || {}).length > 0 ? (
+            Object.entries(stats.subjectStats).sort((a, b) => b[1].attempted - a[1].attempted).map(([subject, data]) => {
+              const proficiency = Math.round((data.correct / data.attempted) * 100);
+              return (
+                <div key={subject} className="bg-white p-6 rounded-[2rem] border border-slate-border shadow-sm space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-lg font-bold text-slate-800 capitalize">{subject}</p>
+                      <p className="text-xs text-slate-400 font-medium">{data.correct} Correct / {data.attempted} Attempted</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-2xl font-black text-brand-primary tracking-tighter">{proficiency}%</p>
+                      <p className="text-[10px] font-bold uppercase text-slate-300 tracking-widest">Mastery</p>
+                    </div>
+                  </div>
+                  <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden border border-slate-50">
+                    <motion.div 
+                      className="h-full bg-brand-primary shadow-[0_0_15px_rgba(59,130,246,0.3)]"
+                      initial={{ width: 0 }}
+                      animate={{ width: `${proficiency}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            })
+          ) : (
+            <div className="md:col-span-2 p-12 bg-slate-50 border-2 border-dashed border-slate-200 rounded-[2.5rem] text-center space-y-4">
+              <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto shadow-sm">
+                <BookOpen className="w-8 h-8 text-slate-300" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-slate-800 font-bold text-lg">No Mastery Data Yet</p>
+                <p className="text-slate-500 max-w-xs mx-auto">Complete quizzes to see your proficiency levels per subject here.</p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

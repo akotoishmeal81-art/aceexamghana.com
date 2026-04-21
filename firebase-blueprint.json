@@ -13,11 +13,17 @@
         "lastActive": { "type": "string", "format": "date-time", "description": "ISO timestamp of the last active session." },
         "subjectScores": { 
           "type": "object", 
-          "description": "Performance mapping per subject.",
-          "properties": {
-            "math": { "type": "integer" },
-            "science": { "type": "integer" },
-            "english": { "type": "integer" }
+          "description": "Mastery percentage mapping per subject."
+        },
+        "subjectStats": {
+          "type": "object",
+          "description": "Granular question counts per subject.",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "attempted": { "type": "integer" },
+              "correct": { "type": "integer" }
+            }
           }
         }
       },
