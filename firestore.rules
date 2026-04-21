@@ -1,0 +1,64 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Helpers ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // --- User Progress Validation ---
+    function isValidUserProgress(data) {
+      return data.keys().hasAll(['uid', 'totalAttempted', 'totalCorrect', 'streak', 'lastActive']) &&
+             data.keys().size() <= 10 && // Allow for subjectScores object
+             data.uid == request.auth.uid &&
+             data.totalAttempted is int &&
+             data.totalAttempted >= 0 &&
+             data.totalCorrect is int &&
+             data.totalCorrect >= 0 &&
+             data.streak is int &&
+             data.streak >= 0 &&
+             data.lastActive is string &&
+             data.lastActive.size() <= 50;
+    }
+
+    // --- User Collection ---
+    match /users/{userId} {
+      allow get: if isOwner(userId) && isValidId(userId);
+      
+      allow create: if isOwner(userId) && 
+                      isValidId(userId) && 
+                      isValidUserProgress(incoming());
+
+      allow update: if isOwner(userId) && 
+                      isValidId(userId) && 
+                      isValidUserProgress(incoming()) && (
+                        // Protect immutable fields if any (currently none except UID which is in helper)
+                        incoming().uid == existing().uid
+                      );
+      
+      allow delete: if false; // Progress should not be deleted easily
+    }
+  }
+}

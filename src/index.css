@@ -1,0 +1,104 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Outfit", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  --color-brand-primary: #2563eb; /* Blue 600 */
+  --color-brand-secondary: #e11d48; /* Rose 600 */
+  --color-brand-accent: #059669; /* Emerald 600 */
+  --color-bg-light: #f8fafc; /* Slate 50 */
+  --color-surface: #ffffff;
+  --color-ink: #1e293b; /* Slate 800 */
+  --color-slate-border: #e2e8f0; /* Slate 200 */
+}
+
+@layer base {
+  body {
+    @apply bg-bg-light text-ink font-sans antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display font-extrabold tracking-tight;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-brand-primary text-white px-6 py-2.5 rounded-xl font-bold shadow-md hover:bg-blue-700 hover:shadow-lg transition-all active:scale-95 disabled:opacity-50;
+  }
+  
+  .btn-secondary {
+    @apply bg-white text-ink border border-slate-border px-6 py-2.5 rounded-xl font-bold shadow-sm hover:bg-slate-50 transition-all active:scale-95;
+  }
+
+  .nav-item {
+    @apply py-2 px-4 rounded-lg flex items-center gap-3 transition-all font-semibold text-slate-500 hover:bg-slate-100 hover:text-slate-800;
+  }
+
+  .nav-item-active {
+    @apply bg-blue-50 text-blue-700 shadow-sm border border-blue-100;
+  }
+
+  .glass-card {
+    @apply bg-white border border-slate-border rounded-2xl p-6 shadow-sm;
+  }
+
+  .interactive-card {
+    @apply bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-all cursor-pointer border border-slate-border;
+  }
+
+  /* Flip Card Styles */
+  .flip-card {
+    position: relative;
+    width: 100%;
+    height: 400px;
+    perspective: 1000px;
+  }
+
+  .flip-card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    transition: transform 0.7s;
+    transform-style: preserve-3d;
+  }
+
+  .flip-card.flipped .flip-card-inner {
+    transform: rotateY(180deg);
+  }
+
+  .flip-card-front, .flip-card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    border-radius: 2rem; /* 32px */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+  }
+
+  .flip-card-front {
+    @apply bg-white border-2 border-blue-100 shadow-inner;
+  }
+
+  .flip-card-back {
+    transform: rotateY(180deg);
+    @apply bg-brand-primary text-white shadow-xl;
+  }
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+}

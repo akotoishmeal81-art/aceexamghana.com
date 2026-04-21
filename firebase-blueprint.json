@@ -1,0 +1,32 @@
+{
+  "entities": {
+    "UserProgress": {
+      "title": "User Progress",
+      "description": "Stores exam preparation statistics and progress for a student.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "The unique identifer for the user." },
+        "totalAttempted": { "type": "integer", "description": "Total number of questions attempted." },
+        "totalCorrect": { "type": "integer", "description": "Total number of correct answers." },
+        "streak": { "type": "integer", "description": "Current daily study streak." },
+        "lastActive": { "type": "string", "format": "date-time", "description": "ISO timestamp of the last active session." },
+        "subjectScores": { 
+          "type": "object", 
+          "description": "Performance mapping per subject.",
+          "properties": {
+            "math": { "type": "integer" },
+            "science": { "type": "integer" },
+            "english": { "type": "integer" }
+          }
+        }
+      },
+      "required": ["uid", "totalAttempted", "totalCorrect", "streak", "lastActive"]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": "UserProgress",
+      "description": "Root document for user-specific data and statistics."
+    }
+  }
+}
