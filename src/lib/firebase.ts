@@ -10,6 +10,9 @@ import {
   signInWithPopup, 
   signOut,
   onAuthStateChanged,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  updateProfile,
   User as FirebaseUser
 } from 'firebase/auth';
 import { 
@@ -40,6 +43,17 @@ export const loginWithGoogle = async () => {
 };
 
 export const logout = () => signOut(auth);
+
+export const signUpManual = async (email: string, pass: string, name: string) => {
+  const res = await createUserWithEmailAndPassword(auth, email, pass);
+  await updateProfile(res.user, { displayName: name });
+  return res.user;
+};
+
+export const loginManual = async (email: string, pass: string) => {
+  const res = await signInWithEmailAndPassword(auth, email, pass);
+  return res.user;
+};
 
 export const getUserProgress = async (uid: string): Promise<UserStats | null> => {
   try {

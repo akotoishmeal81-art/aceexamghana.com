@@ -28,6 +28,8 @@ import {
   auth, 
   loginWithGoogle, 
   logout, 
+  signUpManual,
+  loginManual,
   getUserProgress, 
   saveUserProgress 
 } from './lib/firebase';
@@ -53,6 +55,11 @@ export default function App() {
   const [view, setView] = useState<'dashboard' | 'study' | 'quiz' | 'stats' | 'auth'>('dashboard');
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [authDisplayName, setAuthDisplayName] = useState('');
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
   const [filters, setFilters] = useState({
     search: '',
     examType: '' as ExamType | '',
@@ -370,25 +377,111 @@ export default function App() {
     }));
   }} />;
 
+  const handleAuthSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthError(null);
+    try {
+      if (isSignUp) {
+        await signUpManual(email, password, authDisplayName);
+      } else {
+        await loginManual(email, password);
+      }
+      setView('dashboard');
+    } catch (err: any) {
+      setAuthError(err.message || "Authentication failed");
+    }
+  };
+
   const renderAuth = () => (
     <div className="min-h-[80vh] flex items-center justify-center py-12 px-4 animate-in fade-in zoom-in-95 duration-500">
-      <div className="max-w-md w-full bg-white p-10 rounded-[3rem] border border-slate-border shadow-2xl text-center space-y-10 relative overflow-hidden">
+      <div className="max-w-md w-full bg-white p-10 rounded-[3rem] border border-slate-border shadow-2xl text-center space-y-8 relative overflow-hidden">
         {/* Background Geometric Decor */}
         <div className="absolute -top-12 -right-12 w-48 h-48 bg-blue-50 rounded-full blur-3xl opacity-50"></div>
         <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-rose-50 rounded-full blur-3xl opacity-50"></div>
 
         <div className="relative space-y-6">
-          <div className="w-20 h-20 bg-brand-primary rounded-[2rem] flex items-center justify-center mx-auto shadow-xl shadow-brand-primary/20 rotate-12 group-hover:rotate-0 transition-transform">
-            <UserIcon className="w-10 h-10 text-white" />
+          <div className="w-16 h-16 bg-brand-primary rounded-2xl flex items-center justify-center mx-auto shadow-xl shadow-brand-primary/20 rotate-12">
+            <UserIcon className="w-8 h-8 text-white" />
           </div>
           <div className="space-y-2">
-            <h2 className="text-4xl font-extrabold tracking-tight text-slate-800">Join the Elite</h2>
-            <p className="text-slate-500 font-medium font-display leading-tight">Elevate your BECE prep with Cloud Sync and Personal Mastery tracking.</p>
+            <h2 className="text-3xl font-extrabold tracking-tight text-slate-800">
+              {isSignUp ? 'Create Account' : 'Welcome Back'}
+            </h2>
+            <p className="text-slate-500 text-sm font-medium">
+              {isSignUp ? 'Start your journey to BECE excellence today.' : 'Sign in to continue your mastery journey.'}
+            </p>
           </div>
         </div>
 
-        <div className="space-y-4 relative">
+        <form onSubmit={handleAuthSubmit} className="space-y-4 relative">
+          {authError && (
+            <div className="p-3 bg-rose-50 border border-rose-100 rounded-xl text-rose-600 text-xs font-bold flex items-center gap-2">
+              <AlertCircle className="w-4 h-4" /> {authError}
+            </div>
+          )}
+          
+          <div className="space-y-3">
+            {isSignUp && (
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Full Name"
+                  required
+                  value={authDisplayName}
+                  onChange={(e) => setAuthDisplayName(e.target.value)}
+                  className="w-full px-5 py-3.5 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-brand-primary focus:bg-white transition-all outline-none text-slate-800 font-medium"
+                />
+              </div>
+            )}
+            <div className="relative">
+              <input
+                type="email"
+                placeholder="Email Address"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-5 py-3.5 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-brand-primary focus:bg-white transition-all outline-none text-slate-800 font-medium"
+              />
+            </div>
+            <div className="relative">
+              <input
+                type="password"
+                placeholder="Password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-5 py-3.5 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-brand-primary focus:bg-white transition-all outline-none text-slate-800 font-medium"
+              />
+            </div>
+          </div>
+
           <button 
+            type="submit"
+            className="w-full btn-primary py-4 rounded-2xl text-lg shadow-xl shadow-brand-primary/20 active:scale-[0.98] transition-transform"
+          >
+            {isSignUp ? 'Sign Up' : 'Sign In'}
+          </button>
+
+          <div className="pt-2">
+            <button 
+              type="button" 
+              onClick={() => setIsSignUp(!isSignUp)}
+              className="text-sm font-bold text-slate-400 hover:text-brand-primary transition-colors"
+            >
+              {isSignUp ? 'Already have an account? Sign In' : 'Need an account? Sign Up'}
+            </button>
+          </div>
+        </form>
+
+        <div className="space-y-4">
+          <div className="flex items-center gap-4">
+            <div className="h-px flex-1 bg-slate-100"></div>
+            <span className="text-[10px] uppercase font-bold text-slate-300 tracking-widest">Or Continue With</span>
+            <div className="h-px flex-1 bg-slate-100"></div>
+          </div>
+
+          <button 
+            type="button"
             onClick={async () => {
               try {
                 await loginWithGoogle();
@@ -397,28 +490,18 @@ export default function App() {
                 console.error(e);
               }
             }}
-            className="w-full flex items-center justify-center gap-4 py-4 px-6 bg-white border-2 border-slate-border rounded-2xl font-bold text-slate-700 hover:border-brand-primary hover:bg-slate-50 transition-all active:scale-95 shadow-sm"
+            className="w-full flex items-center justify-center gap-3 py-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-600 hover:border-slate-300 transition-all active:scale-95 text-sm"
           >
-            <img src="https://www.google.com/favicon.ico" alt="Google" className="w-5 h-5" />
-            Continue with Google
+            <img src="https://www.google.com/favicon.ico" alt="Google" className="w-4 h-4" />
+            Google
           </button>
-          
-          <div className="flex items-center gap-4 my-6">
-            <div className="h-px flex-1 bg-slate-100"></div>
-            <span className="text-[10px] uppercase font-bold text-slate-300 tracking-widest">Secure Portal</span>
-            <div className="h-px flex-1 bg-slate-100"></div>
-          </div>
-
-          <p className="text-[10px] text-slate-400 font-medium px-4 leading-relaxed">
-            By continuing, you agree to AceExams Ghana's Terms of Service and Privacy Policy. Your data is encrypted and secure.
-          </p>
         </div>
 
         <button 
           onClick={() => setView('dashboard')}
-          className="text-xs font-bold text-slate-400 uppercase tracking-widest hover:text-slate-800 transition-colors"
+          className="text-[10px] font-bold text-slate-300 uppercase tracking-widest hover:text-slate-600 transition-colors"
         >
-          Skip for now
+          Skip and Browse
         </button>
       </div>
     </div>
