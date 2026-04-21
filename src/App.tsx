@@ -293,28 +293,33 @@ export default function App() {
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-2xl border border-slate-200">
+          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
             <h3 className="text-sm font-bold uppercase tracking-widest text-slate-400 mb-4">Subject Mastery</h3>
-            <div className="space-y-4">
+            <div className="space-y-5">
               {[
-                { name: 'Mathematics', score: 85, color: 'bg-emerald-500' },
-                { name: 'Science', score: 72, color: 'bg-blue-500' },
-                { name: 'English', score: 94, color: 'bg-amber-500' },
-              ].map(subj => (
-                <div key={subj.name} className="space-y-1.5">
-                  <div className="flex justify-between text-sm">
-                    <span className="font-bold text-slate-700">{subj.name}</span>
-                    <span className="font-bold text-slate-400 italic">{subj.score}%</span>
+                { label: 'Mathematics', dbKey: 'Core Mathematics', color: 'bg-emerald-500' },
+                { label: 'Science', dbKey: 'Integrated Science', color: 'bg-blue-500' },
+                { label: 'English', dbKey: 'English Language', color: 'bg-amber-500' },
+                { label: 'Social Studies', dbKey: 'Social Studies', color: 'bg-rose-500' },
+              ].map(subj => {
+                const score = stats.subjectScores[subj.dbKey] || 0;
+                return (
+                  <div key={subj.label} className="space-y-1.5">
+                    <div className="flex justify-between text-sm">
+                      <span className="font-bold text-slate-700">{subj.label}</span>
+                      <span className="font-bold text-slate-400 italic">{score}%</span>
+                    </div>
+                    <div className="h-2.5 bg-slate-50 rounded-full border border-slate-100 overflow-hidden">
+                      <motion.div 
+                        initial={{ width: 0 }}
+                        animate={{ width: `${score}%` }}
+                        className={`h-full ${subj.color}`}
+                        transition={{ duration: 1, ease: "easeOut" }}
+                      />
+                    </div>
                   </div>
-                  <div className="h-2 bg-slate-50 rounded-full border border-slate-100 overflow-hidden">
-                    <motion.div 
-                      initial={{ width: 0 }}
-                      animate={{ width: `${subj.score}%` }}
-                      className={`h-full ${subj.color}`}
-                    />
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </section>
@@ -1173,43 +1178,35 @@ function StatsView({ user, stats, onBack }: { user: User | null, stats: UserStat
 
       <div className="space-y-6">
         <h2 className="text-2xl font-bold text-slate-800">Subject Mastery</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {Object.entries(stats.subjectStats || {}).length > 0 ? (
-            Object.entries(stats.subjectStats).sort((a, b) => b[1].attempted - a[1].attempted).map(([subject, data]) => {
-              const proficiency = Math.round((data.correct / data.attempted) * 100);
+        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-border shadow-sm">
+          <div className="space-y-8">
+            {[
+              { id: 'math', name: 'Core Mathematics', label: 'Mathematics', color: 'bg-emerald-500' },
+              { id: 'science', name: 'Integrated Science', label: 'Science', color: 'bg-blue-500' },
+              { id: 'english', name: 'English Language', label: 'English', color: 'bg-amber-500' },
+              { id: 'social', name: 'Social Studies', color: 'bg-rose-500' }
+            ].map((sub) => {
+              const data = stats.subjectStats?.[sub.name] || { attempted: 0, correct: 0 };
+              const proficiency = data.attempted > 0 ? Math.round((data.correct / data.attempted) * 100) : 0;
+              
               return (
-                <div key={subject} className="bg-white p-6 rounded-[2rem] border border-slate-border shadow-sm space-y-4">
+                <div key={sub.id} className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-lg font-bold text-slate-800 capitalize">{subject}</p>
-                      <p className="text-xs text-slate-400 font-medium">{data.correct} Correct / {data.attempted} Attempted</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-2xl font-black text-brand-primary tracking-tighter">{proficiency}%</p>
-                      <p className="text-[10px] font-bold uppercase text-slate-300 tracking-widest">Mastery</p>
-                    </div>
+                    <p className="text-lg font-bold text-slate-700">{sub.label || sub.name}</p>
+                    <p className="text-lg font-bold text-slate-400">{proficiency}%</p>
                   </div>
-                  <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden border border-slate-50">
+                  <div className="w-full h-2.5 bg-slate-50 rounded-full overflow-hidden border border-slate-100">
                     <motion.div 
-                      className="h-full bg-brand-primary shadow-[0_0_15px_rgba(59,130,246,0.3)]"
+                      className={`h-full ${sub.color}`}
                       initial={{ width: 0 }}
                       animate={{ width: `${proficiency}%` }}
+                      transition={{ duration: 0.8, ease: 'easeOut' }}
                     />
                   </div>
                 </div>
               );
-            })
-          ) : (
-            <div className="md:col-span-2 p-12 bg-slate-50 border-2 border-dashed border-slate-200 rounded-[2.5rem] text-center space-y-4">
-              <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto shadow-sm">
-                <BookOpen className="w-8 h-8 text-slate-300" />
-              </div>
-              <div className="space-y-1">
-                <p className="text-slate-800 font-bold text-lg">No Mastery Data Yet</p>
-                <p className="text-slate-500 max-w-xs mx-auto">Complete quizzes to see your proficiency levels per subject here.</p>
-              </div>
-            </div>
-          )}
+            })}
+          </div>
         </div>
       </div>
     </div>
