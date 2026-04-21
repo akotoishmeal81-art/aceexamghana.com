@@ -18,6 +18,7 @@ export interface UserStats {
   totalAttempted: number;
   totalCorrect: number;
   streak: number;
+  points: number;
   lastActive: string; // ISO date
   subjectScores: Record<string, number>;
 }

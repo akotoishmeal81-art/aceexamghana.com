@@ -30,8 +30,8 @@ service cloud.firestore {
 
     // --- User Progress Validation ---
     function isValidUserProgress(data) {
-      return data.keys().hasAll(['uid', 'totalAttempted', 'totalCorrect', 'streak', 'lastActive']) &&
-             data.keys().size() <= 10 && // Allow for subjectScores object
+      return data.keys().hasAll(['uid', 'totalAttempted', 'totalCorrect', 'streak', 'points', 'lastActive']) &&
+             data.keys().size() <= 12 && // Allow for subjectScores object
              data.uid == request.auth.uid &&
              data.totalAttempted is int &&
              data.totalAttempted >= 0 &&
@@ -39,6 +39,8 @@ service cloud.firestore {
              data.totalCorrect >= 0 &&
              data.streak is int &&
              data.streak >= 0 &&
+             data.points is int &&
+             data.points >= 0 &&
              data.lastActive is string &&
              data.lastActive.size() <= 50;
     }

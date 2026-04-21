@@ -9,6 +9,7 @@
         "totalAttempted": { "type": "integer", "description": "Total number of questions attempted." },
         "totalCorrect": { "type": "integer", "description": "Total number of correct answers." },
         "streak": { "type": "integer", "description": "Current daily study streak." },
+        "points": { "type": "integer", "description": "Total earned experience points." },
         "lastActive": { "type": "string", "format": "date-time", "description": "ISO timestamp of the last active session." },
         "subjectScores": { 
           "type": "object", 
@@ -20,7 +21,7 @@
           }
         }
       },
-      "required": ["uid", "totalAttempted", "totalCorrect", "streak", "lastActive"]
+      "required": ["uid", "totalAttempted", "totalCorrect", "streak", "points", "lastActive"]
     }
   },
   "firestore": {

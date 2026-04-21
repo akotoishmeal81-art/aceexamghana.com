@@ -69,11 +69,16 @@ export default function App() {
 
   const [stats, setStats] = useState<UserStats>(() => {
     const saved = localStorage.getItem('ace_exams_stats');
-    if (saved) return JSON.parse(saved);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      // Ensure points exists for older local data
+      return { ...parsed, points: parsed.points || 0 };
+    }
     return {
       totalAttempted: 0,
       totalCorrect: 0,
-      streak: 4, // Default for aesthetic in demo
+      streak: 0,
+      points: 0,
       lastActive: new Date().toISOString(),
       subjectScores: {}
     };
@@ -127,31 +132,46 @@ export default function App() {
 
   const renderDashboard = () => (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <header className="flex items-center justify-between">
-        <div>
-          <h2 className="text-3xl font-bold text-slate-800">
-            {user ? `Welcome back, ${user.displayName?.split(' ')[0]} 👋` : 'Welcome back, Student 👋'}
-          </h2>
-          <p className="text-slate-500">Ready to crush your BECE 2025 prep?</p>
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+        <div className="flex items-center gap-4">
+          {user && (
+            <div className="w-16 h-16 rounded-2xl bg-white border-2 border-brand-primary p-0.5 shadow-lg shadow-brand-primary/10 overflow-hidden shrink-0">
+               <img 
+                 src={user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}`} 
+                 alt="Profile" 
+                 className="w-full h-full object-cover rounded-[0.9rem]" 
+                 referrerPolicy="no-referrer"
+               />
+            </div>
+          )}
+          <div>
+            <h2 className="text-3xl font-bold text-slate-800">
+              {user ? `Welcome, ${user.displayName?.split(' ')[0] || 'Learner'} 👋` : 'Welcome back, Student 👋'}
+            </h2>
+            <p className="text-slate-500 font-medium">
+              {stats.points > 0 ? `You've earned ${stats.points.toLocaleString()} XP. Keep going!` : 'Ready to start your mastery journey?'}
+            </p>
+          </div>
         </div>
-        <div className="hidden md:flex items-center gap-4">
-          <div className="bg-amber-100 text-amber-700 px-4 py-2 rounded-full text-sm font-bold border border-amber-200">⭐ 1,450 Points</div>
+        <div className="flex items-center gap-3">
+          <div className="flex-1 sm:flex-none bg-amber-100 text-amber-700 px-5 py-2.5 rounded-2xl text-sm font-bold border border-amber-200 flex items-center justify-center gap-2 shadow-sm">
+            <Star className="w-4 h-4 fill-amber-500 text-amber-500" />
+            {stats.points.toLocaleString()} Points
+          </div>
           {user ? (
             <button 
               onClick={() => logout()}
-              className="w-12 h-12 rounded-full bg-slate-200 border-2 border-white shadow-sm ring-1 ring-slate-100 overflow-hidden group relative"
+              className="px-5 py-2.5 rounded-2xl bg-white border border-slate-200 text-slate-600 font-bold text-sm hover:bg-rose-50 hover:text-rose-600 hover:border-rose-100 transition-all flex items-center gap-2"
             >
-              <img src={user.photoURL || ''} alt="Profile" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-              <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                <LogOut className="w-5 h-5 text-white" />
-              </div>
+              <LogOut className="w-4 h-4" />
+              <span className="hidden md:inline">Sign Out</span>
             </button>
           ) : (
             <button 
               onClick={() => setView('auth')}
-              className="w-12 h-12 rounded-full bg-slate-200 border-2 border-white shadow-sm ring-1 ring-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-300 transition-colors"
+              className="px-5 py-2.5 rounded-2xl bg-brand-primary text-white font-bold text-sm hover:bg-blue-600 shadow-lg shadow-brand-primary/20 transition-all"
             >
-              <UserIcon className="w-6 h-6" />
+              Sign In
             </button>
           )}
         </div>
@@ -372,7 +392,8 @@ export default function App() {
       ...prev,
       totalAttempted: prev.totalAttempted + filteredQuestions.length,
       totalCorrect: prev.totalCorrect + correct,
-      streak: prev.streak + 1, // Simple streak
+      points: prev.points + (correct * 10),
+      streak: prev.streak + 1, // Simple streak tracking
       lastActive: new Date().toISOString()
     }));
   }} />;
@@ -382,13 +403,27 @@ export default function App() {
     setAuthError(null);
     try {
       if (isSignUp) {
-        await signUpManual(email, password, authDisplayName);
+        const newUser = await signUpManual(email, password, authDisplayName);
+        const freshStats: UserStats = {
+          totalAttempted: 0,
+          totalCorrect: 0,
+          streak: 0,
+          points: 0,
+          lastActive: new Date().toISOString(),
+          subjectScores: {}
+        };
+        await saveUserProgress(newUser.uid, freshStats);
+        setStats(freshStats);
       } else {
         await loginManual(email, password);
       }
       setView('dashboard');
     } catch (err: any) {
-      setAuthError(err.message || "Authentication failed");
+      let message = err.message || "Authentication failed";
+      if (err.code === 'auth/operation-not-allowed') {
+        message = "Email/Password sign-in is not enabled in Firebase Console. Please enable it under Authentication > Sign-in method.";
+      }
+      setAuthError(message);
     }
   };
 
@@ -533,6 +568,42 @@ export default function App() {
               {label}
             </button>
           ))}
+          
+          <div className="pt-6 mt-6 border-t border-slate-100 px-2">
+            <p className="text-[10px] uppercase font-bold text-slate-400 tracking-widest mb-4 ml-2">Account</p>
+            {user ? (
+              <div className="space-y-2">
+                <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-2xl border border-slate-100">
+                  <div className="w-10 h-10 rounded-xl bg-brand-primary/10 flex items-center justify-center overflow-hidden">
+                    {user.photoURL ? (
+                      <img src={user.photoURL} alt="User" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                    ) : (
+                      <UserIcon className="w-5 h-5 text-brand-primary" />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold text-slate-800 truncate">{user.displayName || 'Learner'}</p>
+                    <p className="text-[10px] text-slate-400 truncate">{user.email}</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => logout()}
+                  className="w-full flex items-center gap-3 p-3 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-2xl transition-all font-bold text-sm"
+                >
+                  <LogOut className="w-5 h-5" />
+                  Sign Out
+                </button>
+              </div>
+            ) : (
+              <button 
+                onClick={() => setView('auth')}
+                className={`w-full flex items-center gap-3 p-3 rounded-2xl transition-all font-bold text-sm ${view === 'auth' ? 'bg-brand-primary text-white shadow-lg' : 'text-slate-500 hover:bg-brand-primary/5 hover:text-brand-primary'}`}
+              >
+                <LogIn className="w-5 h-5" />
+                Sign In / Join
+              </button>
+            )}
+          </div>
         </nav>
 
         <div className="p-6 border-t border-slate-50 m-4 rounded-2xl bg-slate-50/50">
@@ -566,7 +637,7 @@ export default function App() {
               {view === 'dashboard' && renderDashboard()}
               {view === 'study' && renderStudy()}
               {view === 'quiz' && renderQuiz()}
-              {view === 'stats' && <StatsView stats={stats} onBack={() => setView('dashboard')} />}
+              {view === 'stats' && <StatsView user={user} stats={stats} onBack={() => setView('dashboard')} />}
               {view === 'auth' && renderAuth()}
             </motion.div>
           </AnimatePresence>
@@ -583,6 +654,18 @@ export default function App() {
               <Icon className="w-5 h-5 flex-shrink-0" />
             </button>
           ))}
+          <button
+            onClick={() => setView('auth')}
+            className={`p-4 rounded-3xl transition-all ${view === 'auth' ? 'bg-brand-primary text-white shadow-xl shadow-brand-primary/30 scale-110' : 'text-slate-400 hover:bg-slate-100'}`}
+          >
+            {user ? (
+              <div className="w-5 h-5 rounded-full overflow-hidden border border-current">
+                <img src={user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}`} alt="User" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+              </div>
+            ) : (
+              <UserIcon className="w-5 h-5 flex-shrink-0" />
+            )}
+          </button>
         </nav>
       </main>
     </div>
@@ -864,12 +947,25 @@ function QuizModeView({ onBack, questions, onFinish }: { onBack: () => void, que
 
 // --- Stats View ---
 
-function StatsView({ stats, onBack }: { stats: UserStats, onBack: () => void }) {
+function StatsView({ user, stats, onBack }: { user: User | null, stats: UserStats, onBack: () => void }) {
   return (
     <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <header className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-slate-800">Learning Mastery</h1>
-        <button onClick={onBack} className="btn-secondary px-4 py-2">Back Home</button>
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="flex items-center gap-4">
+          <div className="w-16 h-16 rounded-2xl bg-white border-2 border-brand-primary p-0.5 shadow-lg shadow-brand-primary/10 overflow-hidden shrink-0">
+             <img 
+               src={user?.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.uid}`} 
+               alt="Profile" 
+               className="w-full h-full object-cover rounded-[0.9rem]" 
+               referrerPolicy="no-referrer"
+             />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold text-slate-800">{user?.displayName || 'Mastery Profile'}</h1>
+            <p className="text-slate-500 font-medium">{user?.email || 'AceExams.gh Learner'}</p>
+          </div>
+        </div>
+        <button onClick={onBack} className="btn-secondary px-6 py-3 rounded-2xl font-bold text-sm h-fit">Back Home</button>
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -896,28 +992,28 @@ function StatsView({ stats, onBack }: { stats: UserStats, onBack: () => void }) 
         </div>
 
         <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="bg-white p-8 rounded-[2.5rem] border border-slate-border flex flex-col justify-between shadow-sm group hover:border-brand-primary transition-all">
+          <div className="bg-white p-8 rounded-[2.5rem] border border-slate-border flex flex-col justify-between shadow-sm group hover:border-amber-500 transition-all">
+            <div className="space-y-1">
+              <div className="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <Star className="w-6 h-6 text-amber-600 fill-amber-600" />
+              </div>
+              <p className="text-slate-400 font-bold uppercase text-[10px] tracking-widest">Experience Points</p>
+              <p className="text-4xl font-bold text-slate-800 tracking-tighter">{stats.points.toLocaleString()}</p>
+            </div>
+            <p className="text-xs text-slate-400 mt-4 font-medium italic">Earned from quizzes & study.</p>
+          </div>
+
+          <div className="bg-white p-8 rounded-[2.5rem] border border-slate-border flex flex-col justify-between shadow-sm group hover:border-emerald-500 transition-all">
             <div className="space-y-1">
               <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                 <CheckCircle2 className="w-6 h-6 text-emerald-600" />
               </div>
-              <p className="text-slate-400 font-bold uppercase text-[10px] tracking-widest">Questions Correct</p>
-              <p className="text-4xl font-bold text-slate-800 tracking-tighter">{stats.totalCorrect}</p>
-            </div>
-            <p className="text-xs text-slate-400 mt-4 font-medium italic">Mastery across all subjects.</p>
-          </div>
-
-          <div className="bg-white p-8 rounded-[2.5rem] border border-slate-border flex flex-col justify-between shadow-sm group hover:border-blue-500 transition-all">
-            <div className="space-y-1">
-              <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <Trophy className="w-6 h-6 text-brand-primary" />
-              </div>
               <p className="text-slate-400 font-bold uppercase text-[10px] tracking-widest">Accuracy Record</p>
-              <p className="text-4xl font-bold text-brand-primary tracking-tighter">{stats.totalAttempted > 0 ? Math.round((stats.totalCorrect / stats.totalAttempted) * 100) : 0}%</p>
+              <p className="text-4xl font-bold text-slate-800 tracking-tighter">{stats.totalAttempted > 0 ? Math.round((stats.totalCorrect / stats.totalAttempted) * 100) : 0}%</p>
             </div>
             <div className="w-full h-1.5 bg-slate-100 rounded-full mt-4 overflow-hidden">
               <motion.div 
-                className="h-full bg-brand-primary"
+                className="h-full bg-emerald-500"
                 initial={{ width: 0 }}
                 animate={{ width: `${stats.totalAttempted > 0 ? (stats.totalCorrect / stats.totalAttempted) * 100 : 0}%` }}
               />
