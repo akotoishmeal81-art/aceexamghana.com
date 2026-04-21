@@ -108,8 +108,24 @@ export default function App() {
         if (cloudStats) {
           setStats(cloudStats);
         } else {
-          // If no cloud stats, sync local stats to cloud
+          // New user: sync whatever local progress they have (guest progress) to cloud
           await saveUserProgress(currentUser.uid, stats);
+        }
+      } else {
+        // Logged out: Load guest stats from local storage or reset
+        const saved = localStorage.getItem('ace_exams_stats');
+        if (saved) {
+          setStats(JSON.parse(saved));
+        } else {
+          setStats({
+            totalAttempted: 0,
+            totalCorrect: 0,
+            streak: 0,
+            points: 0,
+            lastActive: new Date().toISOString(),
+            subjectScores: {},
+            subjectStats: {}
+          });
         }
       }
     });
@@ -166,7 +182,7 @@ export default function App() {
           </div>
           {user ? (
             <button 
-              onClick={() => logout()}
+              onClick={handleLogout}
               className="px-5 py-2.5 rounded-2xl bg-white border border-slate-200 text-slate-600 font-bold text-sm hover:bg-rose-50 hover:text-rose-600 hover:border-rose-100 transition-all flex items-center gap-2"
             >
               <LogOut className="w-4 h-4" />
@@ -450,6 +466,25 @@ export default function App() {
     });
   }} />;
 
+  const handleLogout = async () => {
+    try {
+      await logout();
+      localStorage.removeItem('ace_exams_stats');
+      setStats({
+        totalAttempted: 0,
+        totalCorrect: 0,
+        streak: 0,
+        points: 0,
+        lastActive: new Date().toISOString(),
+        subjectScores: {},
+        subjectStats: {}
+      });
+      setView('dashboard');
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
+
   const handleAuthSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError(null);
@@ -640,7 +675,7 @@ export default function App() {
                   </div>
                 </div>
                 <button 
-                  onClick={() => logout()}
+                  onClick={handleLogout}
                   className="w-full flex items-center gap-3 p-3 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-2xl transition-all font-bold text-sm"
                 >
                   <LogOut className="w-5 h-5" />
