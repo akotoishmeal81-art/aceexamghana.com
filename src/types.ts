@@ -11,6 +11,7 @@ export interface Question {
   options: string[];
   correct_answer: string;
   explanation: string;
+  passage?: string;
 }
 
 export interface UserStats {

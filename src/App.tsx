@@ -152,6 +152,24 @@ export default function App() {
 
   // --- Views ---
 
+  const handleResetStats = async () => {
+    const freshStats: UserStats = {
+      totalAttempted: 0,
+      totalCorrect: 0,
+      streak: 0,
+      points: 0,
+      lastActive: new Date().toISOString(),
+      subjectScores: {},
+      subjectStats: {}
+    };
+    
+    setStats(freshStats);
+    localStorage.setItem('ace_exams_stats', JSON.stringify(freshStats));
+    if (user) {
+      await saveUserProgress(user.uid, freshStats);
+    }
+  };
+
   const renderDashboard = () => (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
@@ -320,9 +338,13 @@ export default function App() {
               ].map(subj => {
                 const score = stats.subjectScores[subj.dbKey] || 0;
                 return (
-                  <div key={subj.label} className="space-y-1.5">
+                  <button 
+                    key={subj.label} 
+                    onClick={() => setFilters(f => ({ ...f, search: subj.dbKey }))}
+                    className="w-full text-left space-y-1.5 group p-1 rounded-xl hover:bg-slate-50 transition-all active:scale-[0.98]"
+                  >
                     <div className="flex justify-between text-sm">
-                      <span className="font-bold text-slate-700">{subj.label}</span>
+                      <span className="font-bold text-slate-700 group-hover:text-brand-primary transition-colors">{subj.label}</span>
                       <span className="font-bold text-slate-400 italic">{score}%</span>
                     </div>
                     <div className="h-2.5 bg-slate-50 rounded-full border border-slate-100 overflow-hidden">
@@ -333,7 +355,7 @@ export default function App() {
                         transition={{ duration: 1, ease: "easeOut" }}
                       />
                     </div>
-                  </div>
+                  </button>
                 );
               })}
             </div>
@@ -725,7 +747,7 @@ export default function App() {
               {view === 'dashboard' && renderDashboard()}
               {view === 'study' && renderStudy()}
               {view === 'quiz' && renderQuiz()}
-              {view === 'stats' && <StatsView user={user} stats={stats} onBack={() => setView('dashboard')} />}
+              {view === 'stats' && <StatsView user={user} stats={stats} onBack={() => setView('dashboard')} onReset={handleResetStats} />}
               {view === 'auth' && renderAuth()}
             </motion.div>
           </AnimatePresence>
@@ -822,7 +844,14 @@ function StudyMode({
             </div>
             <div className="absolute top-6 right-8 text-slate-200 font-mono text-xl italic drop-shadow-sm leading-none">#{current.year}</div>
             
-            <h2 className="text-2xl md:text-3xl font-display leading-tight px-6">{current.question}</h2>
+            <div className="px-6 space-y-6">
+              {current.passage && (
+                <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 text-sm italic text-slate-600 leading-relaxed text-left max-h-40 overflow-y-auto mb-4">
+                  {current.passage}
+                </div>
+              )}
+              <h2 className="text-2xl md:text-3xl font-display leading-tight">{current.question}</h2>
+            </div>
             
             <div className="mt-12 flex flex-col items-center gap-3">
               <div className="p-3 bg-blue-50 rounded-full">
@@ -1034,8 +1063,13 @@ function QuizModeView({ onBack, questions, onFinish }: {
            <Zap className="w-32 h-32 text-brand-primary" />
         </div>
         
-        <div className="relative z-10">
+        <div className="relative z-10 space-y-6">
           <span className="text-[10px] font-bold uppercase tracking-widest px-3 py-1 bg-slate-100 text-slate-500 rounded-lg">{current.subject}</span>
+          {current.passage && (
+            <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 text-sm italic text-slate-600 leading-relaxed max-h-60 overflow-y-auto">
+              {current.passage}
+            </div>
+          )}
           <h3 className="text-3xl font-bold mt-6 leading-tight text-slate-800">{current.question}</h3>
         </div>
 
@@ -1104,7 +1138,12 @@ function QuizModeView({ onBack, questions, onFinish }: {
 
 // --- Stats View ---
 
-function StatsView({ user, stats, onBack }: { user: User | null, stats: UserStats, onBack: () => void }) {
+function StatsView({ user, stats, onBack, onReset }: { 
+  user: User | null, 
+  stats: UserStats, 
+  onBack: () => void,
+  onReset: () => void
+}) {
   return (
     <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -1122,7 +1161,15 @@ function StatsView({ user, stats, onBack }: { user: User | null, stats: UserStat
             <p className="text-slate-500 font-medium">{user?.email || 'AceExams.gh Learner'}</p>
           </div>
         </div>
-        <button onClick={onBack} className="btn-secondary px-6 py-3 rounded-2xl font-bold text-sm h-fit">Back Home</button>
+        <div className="flex gap-3">
+          <button 
+            onClick={onReset} 
+            className="px-6 py-3 rounded-2xl font-bold text-sm bg-rose-50 text-rose-600 border border-rose-100 hover:bg-rose-100 transition-colors"
+          >
+            Reset Progress
+          </button>
+          <button onClick={onBack} className="btn-secondary px-6 py-3 rounded-2xl font-bold text-sm h-fit">Back Home</button>
+        </div>
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
