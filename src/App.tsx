@@ -20,10 +20,17 @@ import {
   AlertCircle,
   LogIn,
   LogOut,
-  User as UserIcon
+  User as UserIcon,
+  Book,
+  Sparkles,
+  Bot,
+  MessageSquare,
+  Send,
+  Loader2
 } from 'lucide-react';
 import { Question, UserStats, ExamType, SubjectType } from './types';
 import { QUESTIONS } from './data/questions';
+import { SYLLABUS_DATA } from './data/resources';
 import { 
   auth, 
   loginWithGoogle, 
@@ -33,7 +40,9 @@ import {
   getUserProgress, 
   saveUserProgress 
 } from './lib/firebase';
+import { askTutor } from './lib/gemini';
 import { onAuthStateChanged, User } from 'firebase/auth';
+import ReactMarkdown from 'react-markdown';
 
 // --- Sub-components (Simplified for brevity) ---
 
@@ -52,7 +61,8 @@ const StatCard = ({ label, value, icon: Icon, color }: { label: string, value: s
 // --- Content Components ---
 
 export default function App() {
-  const [view, setView] = useState<'dashboard' | 'study' | 'quiz' | 'stats' | 'auth'>('dashboard');
+  const [view, setView] = useState<'dashboard' | 'study' | 'quiz' | 'resources' | 'stats' | 'auth'>('dashboard');
+  const [aiModal, setAIModal] = useState<{ open: boolean, context: string }>({ open: false, context: '' });
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [email, setEmail] = useState('');
@@ -94,6 +104,7 @@ export default function App() {
     { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { id: 'study', icon: BookOpen, label: 'Flash Cards' },
     { id: 'quiz', icon: Zap, label: 'Quizzes' },
+    { id: 'resources', icon: Book, label: 'Study Resources' },
     { id: 'stats', icon: Trophy, label: 'Performance' },
   ];
 
@@ -360,6 +371,26 @@ export default function App() {
               })}
             </div>
           </div>
+
+          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-bold uppercase tracking-widest text-slate-400">Electives</h3>
+              <Sparkles className="w-4 h-4 text-brand-primary" />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                'Economics', 'Government', 'Elective Maths', 'Biology', 'Chemistry', 'Physics'
+              ].map(subj => (
+                <button 
+                  key={subj}
+                  onClick={() => setFilters({ ...filters, search: subj, subjectType: 'Elective' })}
+                  className="px-3 py-2 bg-slate-50 border border-slate-100 rounded-xl text-[11px] font-bold text-slate-600 hover:bg-brand-primary hover:text-white transition-all text-center"
+                >
+                  {subj}
+                </button>
+              ))}
+            </div>
+          </div>
         </section>
 
         <section className="lg:col-span-8 flex flex-col gap-6">
@@ -435,7 +466,7 @@ export default function App() {
     </div>
   );
 
-  const renderStudy = () => <StudyMode onBack={() => setView('dashboard')} questions={filteredQuestions} onCardAction={(subject, isCorrect) => {
+  const renderStudy = () => <StudyMode onBack={() => setView('dashboard')} questions={filteredQuestions} onAskAI={(ctx) => setAIModal({ open: true, context: ctx })} onCardAction={(subject, isCorrect) => {
     setStats(prev => {
       const newSubjectStats = { ...prev.subjectStats };
       const newSubjectScores = { ...prev.subjectScores };
@@ -460,7 +491,7 @@ export default function App() {
       };
     });
   }} />;
-  const renderQuiz = () => <QuizModeView onBack={() => setView('dashboard')} questions={filteredQuestions} onFinish={(correct, subjectSummary) => {
+  const renderQuiz = () => <QuizModeView onBack={() => setView('dashboard')} questions={filteredQuestions} onAskAI={(ctx) => setAIModal({ open: true, context: ctx })} onFinish={(correct, subjectSummary) => {
     setStats(prev => {
       const newSubjectStats = { ...prev.subjectStats };
       const newSubjectScores = { ...prev.subjectScores };
@@ -487,6 +518,70 @@ export default function App() {
       };
     });
   }} />;
+
+  const renderResources = () => (
+    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <header className="space-y-4">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center border border-blue-100 shadow-sm">
+             <Book className="w-6 h-6 text-brand-primary" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold text-slate-800 tracking-tight">Study Resources</h1>
+            <p className="text-slate-500 font-medium">Official BECE & WASSCE Syllabus Overview</p>
+          </div>
+        </div>
+      </header>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {['Mathematics', 'Science', 'English', 'Social Studies'].map(category => {
+          const topics = SYLLABUS_DATA.filter(t => t.subject.includes(category));
+          const colorClass = category === 'Mathematics' ? 'bg-emerald-500' : 
+                            category === 'Science' ? 'bg-blue-500' :
+                            category === 'English' ? 'bg-amber-500' : 'bg-rose-500';
+          
+          return (
+            <div key={category} className="space-y-4">
+              <div className="flex items-center gap-2 px-1">
+                <div className={`w-2 h-2 rounded-full ${colorClass}`}></div>
+                <h3 className="text-sm font-black uppercase tracking-widest text-slate-400">{category}</h3>
+              </div>
+              <div className="space-y-4">
+                {topics.map(topic => (
+                  <div key={topic.id} className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow group">
+                    <h4 className="font-bold text-slate-800 text-lg mb-2">{topic.title}</h4>
+                    <p className="text-sm text-slate-500 leading-relaxed mb-4">{topic.description}</p>
+                    <div className="flex flex-wrap gap-2">
+                      {topic.subtopics.map(sub => (
+                        <span key={sub} className="text-[10px] font-bold px-2 py-1 bg-slate-50 text-slate-400 rounded-lg group-hover:bg-slate-100 group-hover:text-slate-600 transition-colors">{sub}</span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="bg-slate-900 rounded-[2.5rem] p-10 text-white relative overflow-hidden">
+        <div className="absolute top-0 right-0 p-12 opacity-10">
+          <Bot className="w-48 h-48" />
+        </div>
+        <div className="relative z-10 max-w-2xl">
+          <h2 className="text-4xl font-display leading-tight mb-6 italic">Stuck on a topic? Your GH AI Tutor is here to help.</h2>
+          <p className="text-white/60 text-lg mb-8">Get instant explanations customized for the Ghanaian curriculum using the power of Gemini AI.</p>
+          <button 
+            onClick={() => setAIModal({ open: true, context: 'General Syllabus Inquiry' })}
+            className="px-8 py-4 bg-white text-slate-900 rounded-2xl font-bold text-lg hover:bg-slate-100 transition-all flex items-center gap-3 shadow-xl"
+          >
+            <Sparkles className="w-6 h-6 text-brand-primary" />
+            Talk to AI Tutor
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 
   const handleLogout = async () => {
     try {
@@ -747,6 +842,7 @@ export default function App() {
               {view === 'dashboard' && renderDashboard()}
               {view === 'study' && renderStudy()}
               {view === 'quiz' && renderQuiz()}
+              {view === 'resources' && renderResources()}
               {view === 'stats' && <StatsView user={user} stats={stats} onBack={() => setView('dashboard')} onReset={handleResetStats} />}
               {view === 'auth' && renderAuth()}
             </motion.div>
@@ -778,6 +874,26 @@ export default function App() {
           </button>
         </nav>
       </main>
+
+      <AITutorModal 
+        isOpen={aiModal.open} 
+        onClose={() => setAIModal({ ...aiModal, open: false })} 
+        initialContext={aiModal.context} 
+      />
+
+      {/* Floating AI Action Button (Desktop only, or corner) */}
+      <motion.button
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
+        onClick={() => setAIModal({ open: true, context: 'General support and study help.' })}
+        className="fixed right-6 bottom-32 md:bottom-8 z-40 w-14 h-14 bg-brand-primary text-white rounded-2xl shadow-2xl flex items-center justify-center group"
+      >
+        <Bot className="w-7 h-7 group-hover:hidden" />
+        <Sparkles className="w-7 h-7 hidden group-hover:block animate-pulse" />
+        <div className="absolute right-full mr-4 px-3 py-1.5 bg-slate-800 text-white text-[10px] font-bold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none uppercase tracking-widest">
+          AI Tutor Help
+        </div>
+      </motion.button>
     </div>
   );
 }
@@ -787,10 +903,12 @@ export default function App() {
 function StudyMode({ 
   onBack, 
   questions, 
+  onAskAI,
   onCardAction 
 }: { 
   onBack: () => void, 
   questions: Question[], 
+  onAskAI: (context: string) => void,
   onCardAction: (subject: string, isCorrect: boolean) => void 
 }) {
   const [index, setIndex] = useState(0);
@@ -868,7 +986,15 @@ function StudyMode({
                 <div className="h-1 w-12 bg-white/30 mx-auto rounded-full"></div>
               </div>
               <div className="bg-white/10 p-6 rounded-2xl text-sm border border-white/10 text-white/90 text-left leading-relaxed">
-                <strong className="block text-white mb-2 font-bold uppercase text-[10px] tracking-widest">Explanation:</strong>
+                <div className="flex items-center justify-between mb-2">
+                  <strong className="text-white font-bold uppercase text-[10px] tracking-widest">Explanation:</strong>
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); onAskAI(`Explain this: ${current.question}. The correct answer is ${current.correct_answer}.`); }}
+                    className="flex items-center gap-1.5 px-2.5 py-1 bg-white/20 hover:bg-white text-white hover:text-brand-primary rounded-lg text-[10px] font-black uppercase transition-all shadow-sm"
+                  >
+                    <Sparkles className="w-3 h-3" /> Ask AI Tutor
+                  </button>
+                </div>
                 {current.explanation}
               </div>
             </div>
@@ -937,9 +1063,10 @@ function StudyMode({
 
 // --- Quiz Mode ---
 
-function QuizModeView({ onBack, questions, onFinish }: { 
+function QuizModeView({ onBack, questions, onAskAI, onFinish }: { 
   onBack: () => void, 
   questions: Question[], 
+  onAskAI: (context: string) => void,
   onFinish: (correct: number, subjectSummary: Record<string, { attempted: number, correct: number }>) => void 
 }) {
   const [step, setStep] = useState<'config' | 'running' | 'results'>('config');
@@ -993,7 +1120,7 @@ function QuizModeView({ onBack, questions, onFinish }: {
         <p className="text-slate-500 max-w-sm mx-auto font-medium">Test your knowledge under pressure and climb the leaderboard.</p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-2xl mx-auto">
-        {[5, 10, 20].map(n => (
+        {[10, 20, 40].map(n => (
           <button 
             key={n}
             onClick={() => startQuiz(n)}
@@ -1115,16 +1242,26 @@ function QuizModeView({ onBack, questions, onFinish }: {
           className="space-y-6"
         >
           <div className={`p-8 rounded-[2rem] border-2 flex items-start gap-4 ${isCorrect ? 'bg-emerald-50 border-emerald-100' : 'bg-rose-50 border-rose-100'}`}>
-            <div className={`p-2 rounded-full flex-shrink-0 ${isCorrect ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'}`}>
-              {isCorrect ? <CheckCircle2 className="w-6 h-6" /> : <AlertCircle className="w-6 h-6" />}
-            </div>
-            <div>
-              <p className={`text-lg font-bold mb-1 ${isCorrect ? 'text-emerald-900' : 'text-rose-900'}`}>
-                {isCorrect ? 'Fantastic! You got it right.' : 'Oops, not quite!'}
-              </p>
-              <p className={`text-sm leading-relaxed ${isCorrect ? 'text-emerald-700' : 'text-rose-700'}`}>
-                {current.explanation}
-              </p>
+            <div className="flex items-start gap-4">
+              <div className={`p-2 rounded-full flex-shrink-0 ${isCorrect ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'}`}>
+                {isCorrect ? <CheckCircle2 className="w-6 h-6" /> : <AlertCircle className="w-6 h-6" />}
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center justify-between mb-2 gap-4">
+                  <p className={`text-lg font-bold ${isCorrect ? 'text-emerald-900' : 'text-rose-900'}`}>
+                    {isCorrect ? 'Fantastic! You got it right.' : 'Oops, not quite!'}
+                  </p>
+                  <button 
+                     onClick={() => onAskAI(`I answered ${selected} to the question "${current.question}" but the correct answer is ${current.correct_answer}. Please explain why.`)}
+                     className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 hover:bg-brand-primary hover:text-white text-slate-600 rounded-xl text-xs font-bold transition-all border border-slate-200"
+                  >
+                    <Bot className="w-4 h-4" /> Explain with AI
+                  </button>
+                </div>
+                <p className={`text-sm leading-relaxed ${isCorrect ? 'text-emerald-700' : 'text-rose-700'}`}>
+                  {current.explanation}
+                </p>
+              </div>
             </div>
           </div>
           <button onClick={next} className="w-full btn-primary py-5 text-lg shadow-xl shadow-brand-primary/20">
@@ -1136,7 +1273,148 @@ function QuizModeView({ onBack, questions, onFinish }: {
   );
 }
 
-// --- Stats View ---
+// --- AI Tutor Modal ---
+
+function AITutorModal({ isOpen, onClose, initialContext }: { isOpen: boolean, onClose: () => void, initialContext: string }) {
+  const [messages, setMessages] = useState<{ role: 'user' | 'ai', text: string }[]>([]);
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
+  const scrollRef = React.useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (isOpen && initialContext && messages.length === 0) {
+      handleSend(initialContext);
+    }
+  }, [isOpen, initialContext]);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages]);
+
+  const handleSend = async (text: string) => {
+    const msg = text || input;
+    if (!msg.trim()) return;
+
+    setMessages(prev => [...prev, { role: 'user', text: msg }]);
+    setInput('');
+    setLoading(true);
+
+    try {
+      const response = await askTutor(msg, initialContext, messages);
+      setMessages(prev => [...prev, { role: 'ai', text: response }]);
+    } catch (e) {
+      setMessages(prev => [...prev, { role: 'ai', text: "Sorry, I'm having trouble connecting right now. Please try again." }]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8">
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onClose}
+        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+      />
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        className="bg-white w-full max-w-2xl h-[80vh] rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden relative z-10"
+      >
+        <header className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+          <div className="flex items-center gap-3">
+             <div className="w-10 h-10 bg-brand-primary rounded-xl flex items-center justify-center shadow-lg shadow-brand-primary/20">
+               <Sparkles className="w-5 h-5 text-white" />
+             </div>
+             <div>
+               <h3 className="font-bold text-slate-800">Your GH AI Tutor</h3>
+               <p className="text-[10px] uppercase font-bold text-slate-400 tracking-widest">Powered by Gemini AI</p>
+             </div>
+          </div>
+          <div className="flex items-center gap-2">
+            {messages.length > 0 && (
+              <button 
+                onClick={() => setMessages([])}
+                className="p-2 text-slate-400 hover:text-rose-500 transition-colors"
+                title="Clear Chat"
+              >
+                <RotateCcw className="w-5 h-5" />
+              </button>
+            )}
+            <button onClick={onClose} className="p-2 bg-slate-100 text-slate-400 rounded-xl hover:text-slate-600 transition-colors">
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+        </header>
+
+        <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-6 bg-slate-50/30">
+          {messages.length === 0 && !loading && (
+            <div className="text-center py-20 space-y-4">
+              <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto shadow-sm border border-slate-100">
+                <MessageSquare className="w-8 h-8 text-slate-300" />
+              </div>
+              <p className="text-slate-400 font-medium italic">Ask me anything about your syllabus or questions!</p>
+            </div>
+          )}
+          {messages.map((m, i) => (
+            <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <div className={`max-w-[85%] p-4 rounded-2xl text-sm leading-relaxed shadow-sm ${
+                m.role === 'user' 
+                  ? 'bg-brand-primary text-white rounded-tr-none' 
+                  : 'bg-white text-slate-700 rounded-tl-none border border-slate-100'
+              }`}>
+                {m.role === 'ai' ? (
+                  <div className="markdown-body prose prose-sm max-w-none">
+                    <ReactMarkdown>{m.text}</ReactMarkdown>
+                  </div>
+                ) : (
+                  m.text
+                )}
+              </div>
+            </div>
+          ))}
+          {loading && (
+            <div className="flex justify-start">
+               <div className="bg-white p-4 rounded-2xl rounded-tl-none border border-slate-100 shadow-sm flex items-center gap-2">
+                 <Loader2 className="w-4 h-4 text-brand-primary animate-spin" />
+                 <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Tutor is thinking...</span>
+               </div>
+            </div>
+          )}
+        </div>
+
+        <div className="p-6 border-t border-slate-100 bg-white">
+          <form 
+            onSubmit={(e) => { e.preventDefault(); handleSend(input); }}
+            className="relative"
+          >
+            <input 
+              type="text" 
+              placeholder="What would you like to know?"
+              className="w-full pl-6 pr-16 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-brand-primary focus:bg-white transition-all outline-none text-slate-800 font-medium"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              disabled={loading}
+            />
+            <button 
+              type="submit"
+              disabled={loading || !input.trim()}
+              className="absolute right-2 top-2 bottom-2 px-4 bg-brand-primary text-white rounded-xl font-bold hover:bg-blue-600 transition-all disabled:opacity-50"
+            >
+              <Send className="w-5 h-5" />
+            </button>
+          </form>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
 
 function StatsView({ user, stats, onBack, onReset }: { 
   user: User | null, 
