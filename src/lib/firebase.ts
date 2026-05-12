@@ -20,11 +20,57 @@ import {
   doc, 
   getDoc, 
   setDoc, 
-  updateDoc,
   getDocFromServer
 } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
 import { UserStats } from '../types';
+
+enum OperationType {
+  CREATE = 'create',
+  UPDATE = 'update',
+  DELETE = 'delete',
+  LIST = 'list',
+  GET = 'get',
+  WRITE = 'write',
+}
+
+interface FirestoreErrorInfo {
+  error: string;
+  operationType: OperationType;
+  path: string | null;
+  authInfo: {
+    userId?: string | null;
+    email?: string | null;
+    emailVerified?: boolean | null;
+    isAnonymous?: boolean | null;
+    tenantId?: string | null;
+    providerInfo?: {
+      providerId?: string | null;
+      email?: string | null;
+    }[];
+  }
+}
+
+function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
+  const errInfo: FirestoreErrorInfo = {
+    error: error instanceof Error ? error.message : String(error),
+    authInfo: {
+      userId: auth.currentUser?.uid,
+      email: auth.currentUser?.email,
+      emailVerified: auth.currentUser?.emailVerified,
+      isAnonymous: auth.currentUser?.isAnonymous,
+      tenantId: auth.currentUser?.tenantId,
+      providerInfo: auth.currentUser?.providerData?.map(provider => ({
+        providerId: provider.providerId,
+        email: provider.email,
+      })) || []
+    },
+    operationType,
+    path
+  }
+  console.error('Firestore Error: ', JSON.stringify(errInfo));
+  throw new Error(JSON.stringify(errInfo));
+}
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
@@ -56,6 +102,7 @@ export const loginManual = async (email: string, pass: string) => {
 };
 
 export const getUserProgress = async (uid: string): Promise<UserStats | null> => {
+  const path = `users/${uid}`;
   try {
     const docRef = doc(db, 'users', uid);
     const docSnap = await getDoc(docRef);
@@ -64,17 +111,18 @@ export const getUserProgress = async (uid: string): Promise<UserStats | null> =>
     }
     return null;
   } catch (error) {
-    console.error("Error fetching progress:", error);
-    return null;
+    handleFirestoreError(error, OperationType.GET, path);
+    return null; // unreachable due to throw
   }
 };
 
 export const saveUserProgress = async (uid: string, stats: UserStats) => {
+  const path = `users/${uid}`;
   try {
     const docRef = doc(db, 'users', uid);
     await setDoc(docRef, { ...stats, uid }, { merge: true });
   } catch (error) {
-    console.error("Error saving progress:", error);
+    handleFirestoreError(error, OperationType.WRITE, path);
   }
 };
 

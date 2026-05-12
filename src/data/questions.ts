@@ -1330,5 +1330,49 @@ export const QUESTIONS: Question[] = [
     options: ['22', '24', '36', '26'],
     correct_answer: '26',
     explanation: 'The sequence follows the pattern n² + 1. 1²+1=2, 2²+1=5, 3²+1=10, 4²+1=17. 5th term = 5² + 1 = 26.'
+  },
+  {
+    id: '114',
+    exam_type: 'WASSCE',
+    subject_type: 'Elective',
+    subject: 'Elective ICT',
+    year: 2025,
+    question: 'The binary number 11.101₂ converts to decimal as',
+    options: ['2.25', '3.265', '3.625', '3.825'],
+    correct_answer: '3.625',
+    explanation: '11.101₂ = (1*2¹) + (1*2⁰) + (1*2⁻¹) + (0*2⁻²) + (1*2⁻³) = 2 + 1 + 0.5 + 0 + 0.125 = 3.625.'
+  },
+  {
+    id: '115',
+    exam_type: 'WASSCE',
+    subject_type: 'Elective',
+    subject: 'Elective ICT',
+    year: 2025,
+    question: 'Which of the following information system applications contains analysis tools?',
+    options: ['I and II only', 'I and III only', 'I and IV only', 'II and III only'],
+    correct_answer: 'I and II only',
+    explanation: 'Decision Support Systems (DSS) and Executive Support Systems (ESS) are specifically designed with analytical models to help managers make decisions.'
+  },
+  {
+    id: '116',
+    exam_type: 'WASSCE',
+    subject_type: 'Core',
+    subject: 'Integrated Science',
+    year: 2025,
+    question: 'The nuclide ²²⁶₈₈Ra undergoes alpha decay. The mass number and atomic number of the daughter nuclide are respectively',
+    options: ['226, 89', '230, 90', '226, 88', '222, 86'],
+    correct_answer: '222, 86',
+    explanation: 'Alpha decay reduces the mass number by 4 and the atomic number by 2. 226-4=222 and 88-2=86.'
+  },
+  {
+    id: '117',
+    exam_type: 'WASSCE',
+    subject_type: 'Core',
+    subject: 'Integrated Science',
+    year: 2025,
+    question: 'Determine the effective resistance of two resistors (2Ω and 3Ω) connected in parallel.',
+    options: ['0.83Ω', '5.00Ω', '1.20Ω', '6.00Ω'],
+    correct_answer: '1.20Ω',
+    explanation: 'For parallel resistors: 1/Rt = 1/R1 + 1/R2 = 1/2 + 1/3 = 5/6. Rt = 6/5 = 1.20Ω.'
   }
 ];

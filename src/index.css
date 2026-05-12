@@ -8,15 +8,24 @@
   --color-brand-primary: #2563eb; /* Blue 600 */
   --color-brand-secondary: #e11d48; /* Rose 600 */
   --color-brand-accent: #059669; /* Emerald 600 */
-  --color-bg-light: #f8fafc; /* Slate 50 */
-  --color-surface: #ffffff;
-  --color-ink: #1e293b; /* Slate 800 */
-  --color-slate-border: #e2e8f0; /* Slate 200 */
+  --color-bg-light: #ffffff; /* Brighter background */
+  --color-surface: #ffffff; 
+  --color-ink: #0f172a; /* Deeper contrast for readability */
+  --color-slate-border: #f1f5f9; /* Subtle border */
+}
+
+@variant dark (&:where(.dark, .dark *));
+
+.dark {
+  --color-bg-light: #0f172a; /* Lighter dark background */
+  --color-surface: #1e293b; 
+  --color-ink: #f8fafc; 
+  --color-slate-border: #334155; 
 }
 
 @layer base {
   body {
-    @apply bg-bg-light text-ink font-sans antialiased;
+    @apply bg-bg-light text-ink font-sans antialiased transition-colors duration-300;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -30,23 +39,23 @@
   }
   
   .btn-secondary {
-    @apply bg-white text-ink border border-slate-border px-6 py-2.5 rounded-xl font-bold shadow-sm hover:bg-slate-50 transition-all active:scale-95;
+    @apply bg-surface text-ink border border-slate-border px-6 py-2.5 rounded-xl font-bold shadow-sm hover:bg-bg-light transition-all active:scale-95;
   }
 
   .nav-item {
-    @apply py-2 px-4 rounded-lg flex items-center gap-3 transition-all font-semibold text-slate-500 hover:bg-slate-100 hover:text-slate-800;
+    @apply py-2 px-4 rounded-lg flex items-center gap-3 transition-all font-semibold text-slate-500 hover:bg-bg-light hover:text-brand-primary;
   }
 
   .nav-item-active {
-    @apply bg-blue-50 text-blue-700 shadow-sm border border-blue-100;
+    @apply bg-brand-primary/10 text-brand-primary shadow-sm border border-brand-primary/20;
   }
 
   .glass-card {
-    @apply bg-white border border-slate-border rounded-2xl p-6 shadow-sm;
+    @apply bg-surface border border-slate-border rounded-2xl p-6 shadow-sm;
   }
 
   .interactive-card {
-    @apply bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-all cursor-pointer border border-slate-border;
+    @apply bg-surface rounded-2xl p-6 shadow-sm hover:shadow-md transition-all cursor-pointer border border-slate-border;
   }
 
   .markdown-body {
@@ -58,10 +67,10 @@
   .markdown-body p { @apply text-sm leading-relaxed; }
   .markdown-body ul { @apply list-disc list-inside space-y-1; }
   .markdown-body ol { @apply list-decimal list-inside space-y-1; }
-  .markdown-body a { @apply text-blue-600 underline; }
-  .markdown-body blockquote { @apply border-l-4 border-slate-200 pl-4 italic text-slate-600; }
-  .markdown-body code { @apply bg-slate-100 px-1.5 py-0.5 rounded font-mono text-xs; }
-  .markdown-body pre { @apply bg-slate-100 p-3 rounded-xl overflow-x-auto; }
+  .markdown-body a { @apply text-brand-primary underline; }
+  .markdown-body blockquote { @apply border-l-4 border-slate-border pl-4 italic text-slate-500; }
+  .markdown-body code { @apply bg-bg-light px-1.5 py-0.5 rounded font-mono text-xs; }
+  .markdown-body pre { @apply bg-bg-light p-3 rounded-xl overflow-x-auto border border-slate-border; }
   .markdown-body pre code { @apply bg-transparent p-0; }
 
   /* Flip Card Styles */
@@ -99,7 +108,7 @@
   }
 
   .flip-card-front {
-    @apply bg-white border-2 border-blue-100 shadow-inner;
+    @apply bg-surface border-2 border-brand-primary/10 shadow-inner text-ink;
   }
 
   .flip-card-back {

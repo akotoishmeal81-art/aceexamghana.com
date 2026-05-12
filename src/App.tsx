@@ -26,7 +26,9 @@ import {
   Bot,
   MessageSquare,
   Send,
-  Loader2
+  Loader2,
+  Moon,
+  Sun
 } from 'lucide-react';
 import { Question, UserStats, ExamType, SubjectType } from './types';
 import { QUESTIONS } from './data/questions';
@@ -47,13 +49,13 @@ import ReactMarkdown from 'react-markdown';
 // --- Sub-components (Simplified for brevity) ---
 
 const StatCard = ({ label, value, icon: Icon, color }: { label: string, value: string | number, icon: any, color: string }) => (
-  <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
+  <div className="bg-surface p-4 rounded-2xl shadow-sm border border-slate-border flex items-center gap-4">
     <div className={`p-3 rounded-xl ${color}`}>
       <Icon className="w-5 h-5 text-white" />
     </div>
     <div>
       <p className="text-sm text-slate-500 font-medium">{label}</p>
-      <p className="text-xl font-bold text-slate-900">{value}</p>
+      <p className="text-xl font-bold text-ink">{value}</p>
     </div>
   </div>
 );
@@ -62,6 +64,7 @@ const StatCard = ({ label, value, icon: Icon, color }: { label: string, value: s
 
 export default function App() {
   const [view, setView] = useState<'dashboard' | 'study' | 'quiz' | 'resources' | 'stats' | 'auth'>('dashboard');
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => 'light'); // Force light mode for brightness
   const [aiModal, setAIModal] = useState<{ open: boolean, context: string }>({ open: false, context: '' });
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
@@ -109,18 +112,33 @@ export default function App() {
   ];
 
   useEffect(() => {
+    const root = window.document.documentElement;
+    if (theme === 'dark') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+    localStorage.setItem('ace_exams_theme', theme);
+  }, [theme]);
+
+  useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       setAuthLoading(false);
       
       if (currentUser) {
-        // Fetch cloud stats
-        const cloudStats = await getUserProgress(currentUser.uid);
-        if (cloudStats) {
-          setStats(cloudStats);
-        } else {
-          // New user: sync whatever local progress they have (guest progress) to cloud
-          await saveUserProgress(currentUser.uid, stats);
+        try {
+          // Fetch cloud stats
+          const cloudStats = await getUserProgress(currentUser.uid);
+          if (cloudStats) {
+            setStats(cloudStats);
+          } else {
+            // New user: sync whatever local progress they have (guest progress) to cloud
+            await saveUserProgress(currentUser.uid, stats);
+          }
+        } catch (error) {
+          console.error("Firebase sync error:", error);
+          setAuthError("Failed to sync progress with cloud. You are working offline.");
         }
       } else {
         // Logged out: Load guest stats from local storage or reset
@@ -183,10 +201,10 @@ export default function App() {
 
   const renderDashboard = () => (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 text-ink">
         <div className="flex items-center gap-4">
           {user && (
-            <div className="w-16 h-16 rounded-2xl bg-white border-2 border-brand-primary p-0.5 shadow-lg shadow-brand-primary/10 overflow-hidden shrink-0">
+            <div className="w-16 h-16 rounded-2xl bg-surface border-2 border-brand-primary p-0.5 shadow-lg shadow-brand-primary/10 overflow-hidden shrink-0">
                <img 
                  src={user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}`} 
                  alt="Profile" 
@@ -196,7 +214,7 @@ export default function App() {
             </div>
           )}
           <div>
-            <h2 className="text-3xl font-bold text-slate-800">
+            <h2 className="text-3xl font-bold">
               {user ? `Welcome, ${user.displayName?.split(' ')[0] || 'Learner'} 👋` : 'Welcome back, Student 👋'}
             </h2>
             <p className="text-slate-500 font-medium">
@@ -205,14 +223,14 @@ export default function App() {
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <div className="flex-1 sm:flex-none bg-amber-100 text-amber-700 px-5 py-2.5 rounded-2xl text-sm font-bold border border-amber-200 flex items-center justify-center gap-2 shadow-sm">
+          <div className="flex-1 sm:flex-none bg-amber-500/10 text-amber-600 px-5 py-2.5 rounded-2xl text-sm font-bold border border-amber-500/20 flex items-center justify-center gap-2 shadow-sm">
             <Star className="w-4 h-4 fill-amber-500 text-amber-500" />
             {stats.points.toLocaleString()} Points
           </div>
           {user ? (
             <button 
               onClick={handleLogout}
-              className="px-5 py-2.5 rounded-2xl bg-white border border-slate-200 text-slate-600 font-bold text-sm hover:bg-rose-50 hover:text-rose-600 hover:border-rose-100 transition-all flex items-center gap-2"
+              className="px-5 py-2.5 rounded-2xl bg-surface border border-slate-border text-slate-500 font-bold text-sm hover:bg-rose-500/10 hover:text-rose-500 hover:border-rose-500/20 transition-all flex items-center gap-2"
             >
               <LogOut className="w-4 h-4" />
               <span className="hidden md:inline">Sign Out</span>
@@ -236,7 +254,7 @@ export default function App() {
           </div>
           <button 
             onClick={() => setView('auth')}
-            className="btn-primary bg-white text-blue-700 hover:bg-blue-50 w-full md:w-auto"
+            className="btn-primary bg-brand-primary text-white hover:bg-blue-600 w-full md:w-auto"
           >
             Login Now
           </button>
@@ -245,11 +263,11 @@ export default function App() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="md:col-span-2 grid grid-cols-2 gap-4">
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 flex items-center gap-4">
-            <div className="w-12 h-12 bg-rose-100 rounded-xl flex items-center justify-center text-rose-600 text-2xl font-bold">🃏</div>
+          <div className="bg-surface p-6 rounded-2xl border border-slate-border flex items-center gap-4">
+            <div className="w-12 h-12 bg-rose-500/10 rounded-xl flex items-center justify-center text-rose-600 text-2xl font-bold">🃏</div>
             <div>
-              <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Attempted</p>
-              <p className="text-xl font-bold">{stats.totalAttempted}</p>
+              <p className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Attempted</p>
+              <p className="text-xl font-bold text-ink">{stats.totalAttempted}</p>
             </div>
           </div>
           <div className="bg-blue-600 p-6 rounded-2xl flex items-center gap-4 text-white shadow-lg">
@@ -260,27 +278,27 @@ export default function App() {
             </div>
           </div>
         </div>
-        <div className="md:col-span-2 bg-white p-6 rounded-2xl border border-slate-200 relative overflow-hidden group">
+        <div className="md:col-span-2 bg-surface p-6 rounded-2xl border border-slate-border relative overflow-hidden group">
           <div className="relative z-10">
-            <h3 className="text-sm font-bold uppercase tracking-widest text-blue-600 mb-1">PRO PREP</h3>
-            <p className="text-lg font-bold text-slate-800">Master 2025 Core Subjects</p>
+            <h3 className="text-sm font-bold uppercase tracking-widest text-brand-primary mb-1">PRO PREP</h3>
+            <p className="text-lg font-bold text-ink">Master 2025 Core Subjects</p>
             <p className="text-xs text-slate-500 mt-1">Personalized study plan active.</p>
           </div>
-          <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-blue-50 rounded-full group-hover:scale-110 transition-transform duration-500 opacity-50"></div>
+          <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-brand-primary/10 rounded-full group-hover:scale-110 transition-transform duration-500 opacity-50"></div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <section className="lg:col-span-4 space-y-6">
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-            <h3 className="text-sm font-bold uppercase tracking-widest text-slate-400 mb-4">Search Library</h3>
+          <div className="bg-surface p-6 rounded-2xl border border-slate-border shadow-sm">
+            <h3 className="text-sm font-bold uppercase tracking-widest text-slate-400 mb-4 text-center">Search Library</h3>
             <div className="space-y-4">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <input 
                   type="text" 
                   placeholder="Keyword search..."
-                  className="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/10 transition-all font-medium"
+                  className="w-full pl-9 pr-4 py-2.5 bg-bg-light border border-slate-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/10 transition-all font-medium text-ink"
                   value={filters.search}
                   onChange={(e) => setFilters(f => ({ ...f, search: e.target.value }))}
                 />
@@ -289,13 +307,13 @@ export default function App() {
               <div className="grid grid-cols-2 gap-2">
                 <button 
                   onClick={() => setFilters(f => ({ ...f, examType: 'BECE' }))}
-                  className={`py-2 rounded-lg text-xs font-bold transition-all ${filters.examType === 'BECE' ? 'bg-brand-primary text-white shadow-md' : 'bg-slate-50 text-slate-500 border border-slate-border hover:bg-slate-100'}`}
+                  className={`py-2 rounded-lg text-xs font-bold transition-all ${filters.examType === 'BECE' ? 'bg-brand-primary text-white shadow-md' : 'bg-bg-light text-slate-500 border border-slate-border hover:bg-bg-light/80'}`}
                 >
                   BECE
                 </button>
                 <button 
                   onClick={() => setFilters(f => ({ ...f, examType: 'WASSCE' }))}
-                  className={`py-2 rounded-lg text-xs font-bold transition-all ${filters.examType === 'WASSCE' ? 'bg-brand-primary text-white shadow-md' : 'bg-slate-50 text-slate-500 border border-slate-border hover:bg-slate-100'}`}
+                  className={`py-2 rounded-lg text-xs font-bold transition-all ${filters.examType === 'WASSCE' ? 'bg-brand-primary text-white shadow-md' : 'bg-bg-light text-slate-500 border border-slate-border hover:bg-bg-light/80'}`}
                 >
                   WASSCE
                 </button>
@@ -305,7 +323,7 @@ export default function App() {
                 <div>
                   <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1 tracking-wider">Subject</label>
                   <select 
-                    className="w-full p-2.5 bg-slate-50 border border-slate-border rounded-xl text-sm font-medium focus:outline-none"
+                    className="w-full p-2.5 bg-bg-light border border-slate-border rounded-xl text-sm font-medium focus:outline-none text-ink"
                     value={filters.subjectType}
                     onChange={(e) => setFilters(f => ({ ...f, subjectType: e.target.value as any }))}
                   >
@@ -317,7 +335,7 @@ export default function App() {
                 <div>
                   <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1 tracking-wider">Exam Year</label>
                   <select 
-                    className="w-full p-2.5 bg-slate-50 border border-slate-border rounded-xl text-sm font-medium focus:outline-none"
+                    className="w-full p-2.5 bg-bg-light border border-slate-border rounded-xl text-sm font-medium focus:outline-none text-ink"
                     value={filters.year}
                     onChange={(e) => setFilters(f => ({ ...f, year: e.target.value }))}
                   >
@@ -330,7 +348,7 @@ export default function App() {
               {(filters.examType || filters.subjectType || filters.year || filters.search) && (
                 <button 
                   onClick={() => setFilters({ search: '', examType: '', subjectType: '', year: '' })}
-                  className="w-full py-2 flex items-center justify-center gap-2 text-rose-600 font-bold text-xs uppercase hover:bg-rose-50 rounded-lg transition-colors"
+                  className="w-full py-2 flex items-center justify-center gap-2 text-rose-500 font-bold text-xs uppercase hover:bg-rose-500/10 rounded-lg transition-colors border border-transparent hover:border-rose-500/20"
                 >
                   <RotateCcw className="w-4 h-4" /> Reset Filters
                 </button>
@@ -338,7 +356,7 @@ export default function App() {
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <div className="bg-surface p-6 rounded-2xl border border-slate-border shadow-sm">
             <h3 className="text-sm font-bold uppercase tracking-widest text-slate-400 mb-4">Subject Mastery</h3>
             <div className="space-y-5">
               {[
@@ -352,13 +370,13 @@ export default function App() {
                   <button 
                     key={subj.label} 
                     onClick={() => setFilters(f => ({ ...f, search: subj.dbKey }))}
-                    className="w-full text-left space-y-1.5 group p-1 rounded-xl hover:bg-slate-50 transition-all active:scale-[0.98]"
+                    className="w-full text-left space-y-1.5 group p-1 rounded-xl hover:bg-bg-light transition-all active:scale-[0.98]"
                   >
                     <div className="flex justify-between text-sm">
-                      <span className="font-bold text-slate-700 group-hover:text-brand-primary transition-colors">{subj.label}</span>
+                      <span className="font-bold text-ink group-hover:text-brand-primary transition-colors">{subj.label}</span>
                       <span className="font-bold text-slate-400 italic">{score}%</span>
                     </div>
-                    <div className="h-2.5 bg-slate-50 rounded-full border border-slate-100 overflow-hidden">
+                    <div className="h-2.5 bg-bg-light rounded-full border border-slate-border overflow-hidden">
                       <motion.div 
                         initial={{ width: 0 }}
                         animate={{ width: `${score}%` }}
@@ -372,7 +390,7 @@ export default function App() {
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <div className="bg-surface p-6 rounded-2xl border border-slate-border shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-bold uppercase tracking-widest text-slate-400">Electives</h3>
               <Sparkles className="w-4 h-4 text-brand-primary" />
@@ -384,7 +402,7 @@ export default function App() {
                 <button 
                   key={subj}
                   onClick={() => setFilters({ ...filters, search: subj, subjectType: 'Elective' })}
-                  className="px-3 py-2 bg-slate-50 border border-slate-100 rounded-xl text-[11px] font-bold text-slate-600 hover:bg-brand-primary hover:text-white transition-all text-center"
+                  className="px-3 py-2 bg-bg-light border border-slate-border rounded-xl text-[11px] font-bold text-slate-500 hover:bg-brand-primary hover:text-white transition-all text-center"
                 >
                   {subj}
                 </button>
@@ -395,7 +413,7 @@ export default function App() {
 
         <section className="lg:col-span-8 flex flex-col gap-6">
           <div className="flex items-center justify-between px-2">
-            <h2 className="text-xl font-bold flex items-center gap-2">
+            <h2 className="text-xl font-bold flex items-center gap-2 text-ink">
               <Zap className="w-5 h-5 text-amber-500 fill-amber-500" />
               Quick Practice
             </h2>
@@ -404,26 +422,26 @@ export default function App() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <button 
               onClick={() => setView('study')}
-              className="bg-white p-8 rounded-[2rem] border-2 border-slate-border hover:border-brand-primary transition-all group relative overflow-hidden"
+              className="bg-surface p-8 rounded-[2rem] border-2 border-slate-border hover:border-brand-primary transition-all group relative overflow-hidden"
             >
               <div className="relative z-10 text-left">
-                <div className="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <div className="w-14 h-14 bg-brand-primary/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                   <BookOpen className="w-7 h-7 text-brand-primary" />
                 </div>
-                <h3 className="text-2xl font-bold text-slate-800">Study Mode</h3>
+                <h3 className="text-2xl font-bold text-ink">Study Mode</h3>
                 <p className="text-slate-500 mt-2 font-medium">Flashcards with active recall</p>
                 <div className="mt-8 flex items-center gap-2 text-brand-primary font-bold uppercase text-xs">
                   Start Sessions <ChevronRight className="w-4 h-4" />
                 </div>
               </div>
               <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                <div className="text-8xl font-black">ST</div>
+                <div className="text-8xl font-black text-ink">ST</div>
               </div>
             </button>
 
             <button 
               onClick={() => setView('quiz')}
-              className="bg-slate-900 p-8 rounded-[2rem] text-white hover:shadow-2xl transition-all group relative overflow-hidden"
+              className="bg-brand-primary p-8 rounded-[2rem] text-white hover:shadow-2xl transition-all group relative overflow-hidden border border-white/10 dark:bg-slate-950"
             >
               <div className="relative z-10 text-left">
                 <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
@@ -441,22 +459,22 @@ export default function App() {
             </button>
           </div>
 
-          <div className="bg-white p-6 rounded-2xl border border-slate-200">
+          <div className="bg-surface p-6 rounded-2xl border border-slate-border">
              <div className="flex items-center justify-between mb-6">
-               <h3 className="font-bold text-slate-800">Recent Questions</h3>
+               <h3 className="font-bold text-ink">Recent Questions</h3>
                <button className="text-xs font-bold text-brand-primary hover:underline">View All</button>
              </div>
              <div className="space-y-3">
               {filteredQuestions.slice(0, 3).map(q => (
-                <div key={q.id} className="p-4 bg-slate-50 border border-slate-border rounded-xl flex items-center justify-between group hover:bg-white hover:border-slate-300 transition-all">
+                <div key={q.id} className="p-4 bg-bg-light border border-slate-border rounded-xl flex items-center justify-between group hover:bg-surface hover:border-brand-primary/20 transition-all">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 bg-blue-100 text-blue-700 rounded-md">{q.exam_type}</span>
-                      <span className="text-xs font-bold text-slate-400 uppercase tracking-tighter italic">#{q.year} • {q.subject}</span>
+                      <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 bg-brand-primary/10 text-brand-primary rounded-md">{q.exam_type}</span>
+                      <span className="text-xs font-bold text-slate-500 uppercase tracking-tighter italic">#{q.year} • {q.subject}</span>
                     </div>
-                    <p className="text-slate-800 font-semibold line-clamp-1">{q.question}</p>
+                    <p className="text-ink font-semibold line-clamp-1">{q.question}</p>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-slate-900 transition-colors" />
+                  <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-brand-primary transition-colors" />
                 </div>
               ))}
              </div>
@@ -523,11 +541,11 @@ export default function App() {
     <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <header className="space-y-4">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center border border-blue-100 shadow-sm">
+          <div className="w-12 h-12 bg-brand-primary/10 rounded-2xl flex items-center justify-center border border-brand-primary/20 shadow-sm">
              <Book className="w-6 h-6 text-brand-primary" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-slate-800 tracking-tight">Study Resources</h1>
+            <h1 className="text-3xl font-bold text-ink tracking-tight">Study Resources</h1>
             <p className="text-slate-500 font-medium">Official BECE & WASSCE Syllabus Overview</p>
           </div>
         </div>
@@ -548,12 +566,12 @@ export default function App() {
               </div>
               <div className="space-y-4">
                 {topics.map(topic => (
-                  <div key={topic.id} className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow group">
-                    <h4 className="font-bold text-slate-800 text-lg mb-2">{topic.title}</h4>
+                  <div key={topic.id} className="bg-surface p-6 rounded-3xl border border-slate-border shadow-sm hover:shadow-md transition-shadow group">
+                    <h4 className="font-bold text-ink text-lg mb-2">{topic.title}</h4>
                     <p className="text-sm text-slate-500 leading-relaxed mb-4">{topic.description}</p>
                     <div className="flex flex-wrap gap-2">
                       {topic.subtopics.map(sub => (
-                        <span key={sub} className="text-[10px] font-bold px-2 py-1 bg-slate-50 text-slate-400 rounded-lg group-hover:bg-slate-100 group-hover:text-slate-600 transition-colors">{sub}</span>
+                        <span key={sub} className="text-[10px] font-bold px-2 py-1 bg-bg-light text-slate-500 rounded-lg group-hover:bg-brand-primary/10 group-hover:text-brand-primary transition-colors">{sub}</span>
                       ))}
                     </div>
                   </div>
@@ -564,18 +582,18 @@ export default function App() {
         })}
       </div>
 
-      <div className="bg-slate-900 rounded-[2.5rem] p-10 text-white relative overflow-hidden">
-        <div className="absolute top-0 right-0 p-12 opacity-10">
+      <div className="bg-brand-primary/5 dark:bg-slate-900 rounded-[2.5rem] p-10 text-ink dark:text-white relative overflow-hidden border border-brand-primary/10">
+        <div className="absolute top-0 right-0 p-12 opacity-5">
           <Bot className="w-48 h-48" />
         </div>
         <div className="relative z-10 max-w-2xl">
           <h2 className="text-4xl font-display leading-tight mb-6 italic">Stuck on a topic? Your GH AI Tutor is here to help.</h2>
-          <p className="text-white/60 text-lg mb-8">Get instant explanations customized for the Ghanaian curriculum using the power of Gemini AI.</p>
+          <p className="text-slate-500 dark:text-white/60 text-lg mb-8">Get instant explanations customized for the Ghanaian curriculum using the power of Gemini AI.</p>
           <button 
             onClick={() => setAIModal({ open: true, context: 'General Syllabus Inquiry' })}
-            className="px-8 py-4 bg-white text-slate-900 rounded-2xl font-bold text-lg hover:bg-slate-100 transition-all flex items-center gap-3 shadow-xl"
+            className="px-8 py-4 bg-brand-primary text-white rounded-2xl font-bold text-lg hover:bg-blue-600 transition-all flex items-center gap-3 shadow-xl"
           >
-            <Sparkles className="w-6 h-6 text-brand-primary" />
+            <Sparkles className="w-6 h-6 text-white" />
             Talk to AI Tutor
           </button>
         </div>
@@ -634,17 +652,17 @@ export default function App() {
 
   const renderAuth = () => (
     <div className="min-h-[80vh] flex items-center justify-center py-12 px-4 animate-in fade-in zoom-in-95 duration-500">
-      <div className="max-w-md w-full bg-white p-10 rounded-[3rem] border border-slate-border shadow-2xl text-center space-y-8 relative overflow-hidden">
+      <div className="max-w-md w-full bg-surface p-10 rounded-[3rem] border border-slate-border shadow-2xl text-center space-y-8 relative overflow-hidden">
         {/* Background Geometric Decor */}
-        <div className="absolute -top-12 -right-12 w-48 h-48 bg-blue-50 rounded-full blur-3xl opacity-50"></div>
-        <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-rose-50 rounded-full blur-3xl opacity-50"></div>
+        <div className="absolute -top-12 -right-12 w-48 h-48 bg-brand-primary/10 rounded-full blur-3xl opacity-50"></div>
+        <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-rose-500/10 rounded-full blur-3xl opacity-50"></div>
 
         <div className="relative space-y-6">
           <div className="w-16 h-16 bg-brand-primary rounded-2xl flex items-center justify-center mx-auto shadow-xl shadow-brand-primary/20 rotate-12">
             <UserIcon className="w-8 h-8 text-white" />
           </div>
           <div className="space-y-2">
-            <h2 className="text-3xl font-extrabold tracking-tight text-slate-800">
+            <h2 className="text-3xl font-extrabold tracking-tight text-ink">
               {isSignUp ? 'Create Account' : 'Welcome Back'}
             </h2>
             <p className="text-slate-500 text-sm font-medium">
@@ -655,7 +673,7 @@ export default function App() {
 
         <form onSubmit={handleAuthSubmit} className="space-y-4 relative">
           {authError && (
-            <div className="p-3 bg-rose-50 border border-rose-100 rounded-xl text-rose-600 text-xs font-bold flex items-center gap-2">
+            <div className="p-3 bg-rose-500/10 border border-rose-500/20 rounded-xl text-rose-500 text-xs font-bold flex items-center gap-2">
               <AlertCircle className="w-4 h-4" /> {authError}
             </div>
           )}
@@ -669,7 +687,7 @@ export default function App() {
                   required
                   value={authDisplayName}
                   onChange={(e) => setAuthDisplayName(e.target.value)}
-                  className="w-full px-5 py-3.5 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-brand-primary focus:bg-white transition-all outline-none text-slate-800 font-medium"
+                  className="w-full px-5 py-3.5 bg-bg-light border-2 border-slate-border rounded-2xl focus:border-brand-primary focus:bg-surface transition-all outline-none text-ink font-medium placeholder:text-slate-500"
                 />
               </div>
             )}
@@ -680,7 +698,7 @@ export default function App() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-5 py-3.5 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-brand-primary focus:bg-white transition-all outline-none text-slate-800 font-medium"
+                className="w-full px-5 py-3.5 bg-bg-light border-2 border-slate-border rounded-2xl focus:border-brand-primary focus:bg-surface transition-all outline-none text-ink font-medium placeholder:text-slate-500"
               />
             </div>
             <div className="relative">
@@ -690,7 +708,7 @@ export default function App() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-5 py-3.5 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-brand-primary focus:bg-white transition-all outline-none text-slate-800 font-medium"
+                className="w-full px-5 py-3.5 bg-bg-light border-2 border-slate-border rounded-2xl focus:border-brand-primary focus:bg-surface transition-all outline-none text-ink font-medium placeholder:text-slate-500"
               />
             </div>
           </div>
@@ -715,9 +733,9 @@ export default function App() {
 
         <div className="space-y-4">
           <div className="flex items-center gap-4">
-            <div className="h-px flex-1 bg-slate-100"></div>
-            <span className="text-[10px] uppercase font-bold text-slate-300 tracking-widest">Or Continue With</span>
-            <div className="h-px flex-1 bg-slate-100"></div>
+            <div className="h-px flex-1 bg-slate-border/50"></div>
+            <span className="text-[10px] uppercase font-bold text-slate-500 tracking-widest">Or Continue With</span>
+            <div className="h-px flex-1 bg-slate-border/50"></div>
           </div>
 
           <button 
@@ -730,7 +748,7 @@ export default function App() {
                 console.error(e);
               }
             }}
-            className="w-full flex items-center justify-center gap-3 py-3 bg-white border-2 border-slate-100 rounded-2xl font-bold text-slate-600 hover:border-slate-300 transition-all active:scale-95 text-sm"
+            className="w-full flex items-center justify-center gap-3 py-3 bg-surface border-2 border-slate-border rounded-2xl font-bold text-slate-400 hover:border-brand-primary transition-all active:scale-95 text-sm"
           >
             <img src="https://www.google.com/favicon.ico" alt="Google" className="w-4 h-4" />
             Google
@@ -756,10 +774,20 @@ export default function App() {
   return (
     <div className="min-h-screen bg-bg-light flex overflow-hidden">
       {/* Sidebar Rail (Desktop) */}
-      <aside className="fixed left-0 top-0 bottom-0 w-64 bg-white border-r border-slate-border hidden md:flex flex-col z-40 transform transition-transform duration-300">
-        <div className="p-8 flex items-center gap-3">
-          <div className="w-10 h-10 bg-brand-primary rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg ring-1 ring-blue-400/20">A</div>
-          <h1 className="text-2xl font-extrabold tracking-tight text-slate-800">AceExams<span className="text-brand-primary">.gh</span></h1>
+      <aside className="fixed left-0 top-0 bottom-0 w-64 bg-surface border-r border-slate-border hidden md:flex flex-col z-40 transform transition-transform duration-300">
+        <div className="p-8 flex flex-col gap-6">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-brand-primary rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg ring-1 ring-blue-400/20">A</div>
+            <h1 className="text-2xl font-extrabold tracking-tight text-ink">AceExams<span className="text-brand-primary">.gh</span></h1>
+          </div>
+
+          <button
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            className="flex items-center gap-3 p-3 rounded-2xl bg-bg-light border border-slate-border text-slate-500 hover:text-brand-primary transition-all font-bold text-sm"
+          >
+            {theme === 'dark' ? <Sun className="w-5 h-5 text-amber-500" /> : <Moon className="w-5 h-5 text-indigo-500" />}
+            {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+          </button>
         </div>
         
         <nav className="flex-1 px-4 space-y-1 pt-4">
@@ -774,11 +802,11 @@ export default function App() {
             </button>
           ))}
           
-          <div className="pt-6 mt-6 border-t border-slate-100 px-2">
+          <div className="pt-6 mt-6 border-t border-slate-border px-2">
             <p className="text-[10px] uppercase font-bold text-slate-400 tracking-widest mb-4 ml-2">Account</p>
             {user ? (
               <div className="space-y-2">
-                <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-2xl border border-slate-100">
+                <div className="flex items-center gap-3 p-3 bg-bg-light rounded-2xl border border-slate-border">
                   <div className="w-10 h-10 rounded-xl bg-brand-primary/10 flex items-center justify-center overflow-hidden">
                     {user.photoURL ? (
                       <img src={user.photoURL} alt="User" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
@@ -787,13 +815,13 @@ export default function App() {
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-slate-800 truncate">{user.displayName || 'Learner'}</p>
-                    <p className="text-[10px] text-slate-400 truncate">{user.email}</p>
+                    <p className="text-sm font-bold text-ink truncate">{user.displayName || 'Learner'}</p>
+                    <p className="text-[10px] text-slate-500 truncate">{user.email}</p>
                   </div>
                 </div>
                 <button 
                   onClick={handleLogout}
-                  className="w-full flex items-center gap-3 p-3 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-2xl transition-all font-bold text-sm"
+                  className="w-full flex items-center gap-3 p-3 text-slate-500 hover:text-rose-600 hover:bg-rose-500/10 rounded-2xl transition-all font-bold text-sm"
                 >
                   <LogOut className="w-5 h-5" />
                   Sign Out
@@ -811,13 +839,13 @@ export default function App() {
           </div>
         </nav>
 
-        <div className="p-6 border-t border-slate-50 m-4 rounded-2xl bg-slate-50/50">
-          <p className="text-[10px] uppercase font-extrabold text-slate-400 tracking-widest mb-3">Today's Streak</p>
+        <div className="p-6 border-t border-slate-border m-4 rounded-2xl bg-bg-light/50">
+          <p className="text-[10px] uppercase font-extrabold text-slate-500 tracking-widest mb-3 text-center">Today's Streak</p>
           <div className="flex gap-1.5 mb-3">
             {Array.from({ length: 7 }).map((_, i) => (
               <div 
                 key={i} 
-                className={`h-1.5 flex-1 rounded-full ${i < stats.streak ? 'bg-brand-primary' : 'bg-slate-200'}`} 
+                className={`h-1.5 flex-1 rounded-full ${i < stats.streak ? 'bg-brand-primary' : 'bg-slate-border'}`} 
               />
             ))}
           </div>
@@ -850,19 +878,25 @@ export default function App() {
         </div>
 
         {/* Mobile Nav (Floating Bar) */}
-        <nav className="md:hidden fixed bottom-6 left-6 right-6 bg-white/90 backdrop-blur-2xl border border-white shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-[2rem] p-2 flex items-center justify-around z-50">
+        <nav className="md:hidden fixed bottom-6 left-6 right-6 bg-surface/90 backdrop-blur-2xl border border-slate-border shadow-[0_20px_50px_rgba(0,0,0,0.3)] rounded-[2rem] p-2 flex items-center justify-around z-50">
           {navItems.map(({ id, icon: Icon }) => (
             <button
               key={id}
               onClick={() => setView(id as any)}
-              className={`p-4 rounded-3xl transition-all ${view === id ? 'bg-brand-primary text-white shadow-xl shadow-brand-primary/30 scale-110' : 'text-slate-400 hover:bg-slate-100'}`}
+              className={`p-4 rounded-3xl transition-all ${view === id ? 'bg-brand-primary text-white shadow-xl shadow-brand-primary/30 scale-110' : 'text-slate-500 hover:bg-bg-light'}`}
             >
               <Icon className="w-5 h-5 flex-shrink-0" />
             </button>
           ))}
           <button
+             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+             className="p-4 rounded-3xl transition-all text-slate-500 hover:bg-bg-light"
+          >
+            {theme === 'dark' ? <Sun className="w-5 h-5 text-amber-500" /> : <Moon className="w-5 h-5 text-indigo-500" />}
+          </button>
+          <button
             onClick={() => setView('auth')}
-            className={`p-4 rounded-3xl transition-all ${view === 'auth' ? 'bg-brand-primary text-white shadow-xl shadow-brand-primary/30 scale-110' : 'text-slate-400 hover:bg-slate-100'}`}
+            className={`p-4 rounded-3xl transition-all ${view === 'auth' ? 'bg-brand-primary text-white shadow-xl shadow-brand-primary/30 scale-110' : 'text-slate-400 hover:bg-bg-light'}`}
           >
             {user ? (
               <div className="w-5 h-5 rounded-full overflow-hidden border border-current">
@@ -890,7 +924,7 @@ export default function App() {
       >
         <Bot className="w-7 h-7 group-hover:hidden" />
         <Sparkles className="w-7 h-7 hidden group-hover:block animate-pulse" />
-        <div className="absolute right-full mr-4 px-3 py-1.5 bg-slate-800 text-white text-[10px] font-bold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none uppercase tracking-widest">
+        <div className="absolute right-full mr-4 px-3 py-1.5 bg-brand-primary text-white text-[10px] font-bold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none uppercase tracking-widest">
           AI Tutor Help
         </div>
       </motion.button>
@@ -933,7 +967,7 @@ function StudyMode({
 
   if (!current) return (
     <div className="flex flex-col items-center justify-center py-20 text-center space-y-4">
-      <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center text-slate-400">
+      <div className="w-16 h-16 bg-bg-light rounded-full flex items-center justify-center text-slate-400">
         <BookOpen className="w-8 h-8" />
       </div>
       <p className="text-slate-500 font-medium">No questions found. Try adjusting filters.</p>
@@ -955,27 +989,27 @@ function StudyMode({
         onClick={() => setFlipped(!flipped)}
       >
         <div className="flip-card-inner">
-          <div className="flip-card-front">
+          <div className="flip-card-front bg-surface border border-slate-border">
             <div className="absolute top-6 left-8 flex items-center gap-2">
               <span className="w-2 h-2 bg-brand-primary rounded-full animate-pulse"></span>
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{current.subject}</span>
             </div>
-            <div className="absolute top-6 right-8 text-slate-200 font-mono text-xl italic drop-shadow-sm leading-none">#{current.year}</div>
+            <div className="absolute top-6 right-8 text-slate-300 font-mono text-xl italic drop-shadow-sm leading-none">#{current.year}</div>
             
             <div className="px-6 space-y-6">
               {current.passage && (
-                <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 text-sm italic text-slate-600 leading-relaxed text-left max-h-40 overflow-y-auto mb-4">
+                <div className="bg-bg-light p-6 rounded-2xl border border-slate-border text-sm italic text-slate-500 leading-relaxed text-left max-h-40 overflow-y-auto mb-4">
                   {current.passage}
                 </div>
               )}
-              <h2 className="text-2xl md:text-3xl font-display leading-tight">{current.question}</h2>
+              <h2 className="text-2xl md:text-3xl font-display leading-tight text-ink">{current.question}</h2>
             </div>
             
             <div className="mt-12 flex flex-col items-center gap-3">
-              <div className="p-3 bg-blue-50 rounded-full">
+              <div className="p-3 bg-brand-primary/10 rounded-full">
                 <RotateCcw className="w-5 h-5 text-brand-primary" />
               </div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Tap to flip card</p>
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Tap to flip card</p>
             </div>
           </div>
           <div className="flip-card-back bg-brand-primary">
@@ -985,12 +1019,12 @@ function StudyMode({
                 <p className="text-3xl font-display font-black text-white drop-shadow-md">{current.correct_answer}</p>
                 <div className="h-1 w-12 bg-white/30 mx-auto rounded-full"></div>
               </div>
-              <div className="bg-white/10 p-6 rounded-2xl text-sm border border-white/10 text-white/90 text-left leading-relaxed">
+              <div className="bg-surface/10 p-6 rounded-2xl text-sm border border-white/10 text-white/90 text-left leading-relaxed">
                 <div className="flex items-center justify-between mb-2">
                   <strong className="text-white font-bold uppercase text-[10px] tracking-widest">Explanation:</strong>
                   <button 
                     onClick={(e) => { e.stopPropagation(); onAskAI(`Explain this: ${current.question}. The correct answer is ${current.correct_answer}.`); }}
-                    className="flex items-center gap-1.5 px-2.5 py-1 bg-white/20 hover:bg-white text-white hover:text-brand-primary rounded-lg text-[10px] font-black uppercase transition-all shadow-sm"
+                    className="flex items-center gap-1.5 px-2.5 py-1 bg-white/20 hover:bg-surface text-white hover:text-brand-primary rounded-lg text-[10px] font-black uppercase transition-all shadow-sm"
                   >
                     <Sparkles className="w-3 h-3" /> Ask AI Tutor
                   </button>
@@ -1021,7 +1055,7 @@ function StudyMode({
               </button>
               <button 
                 onClick={(e) => { e.stopPropagation(); handleAction(false); }}
-                className="p-4 bg-slate-800 text-white rounded-2xl font-bold hover:bg-slate-900 transition-all flex flex-col items-center gap-1 shadow-lg"
+                className="p-4 bg-slate-border text-ink rounded-2xl font-bold hover:bg-slate-700 hover:text-white transition-all flex flex-col items-center gap-1 shadow-lg"
               >
                 <AlertCircle className="w-6 h-6" />
                 <span className="text-xs uppercase tracking-widest">Still Learning</span>
@@ -1113,10 +1147,10 @@ function QuizModeView({ onBack, questions, onAskAI, onFinish }: {
   if (step === 'config') return (
     <div className="space-y-8 py-10 animate-in fade-in zoom-in-95 duration-500">
       <div className="text-center space-y-4">
-        <div className="w-20 h-20 bg-rose-50 rounded-[2rem] flex items-center justify-center mx-auto mb-6 shadow-sm border border-rose-100">
-          <Zap className="w-10 h-10 text-rose-600 fill-rose-600" />
+        <div className="w-20 h-20 bg-rose-500/10 rounded-[2rem] flex items-center justify-center mx-auto mb-6 shadow-sm border border-rose-500/20">
+          <Zap className="w-10 h-10 text-rose-500 fill-rose-500" />
         </div>
-        <h2 className="text-3xl font-bold text-slate-800">Quiz Arena</h2>
+        <h2 className="text-3xl font-bold text-ink">Quiz Arena</h2>
         <p className="text-slate-500 max-w-sm mx-auto font-medium">Test your knowledge under pressure and climb the leaderboard.</p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-2xl mx-auto">
@@ -1124,15 +1158,15 @@ function QuizModeView({ onBack, questions, onAskAI, onFinish }: {
           <button 
             key={n}
             onClick={() => startQuiz(n)}
-            className="bg-white p-8 rounded-3xl border-2 border-slate-border hover:border-brand-primary transition-all text-center group active:scale-95"
+            className="bg-surface p-8 rounded-3xl border-2 border-slate-border hover:border-brand-primary transition-all text-center group active:scale-95"
           >
-            <div className="text-4xl font-black text-slate-200 mb-2 group-hover:text-brand-primary transition-colors">{n}</div>
-            <span className="font-bold text-slate-500 uppercase text-xs tracking-widest">Questions</span>
+            <div className="text-4xl font-black text-slate-300 md:text-slate-200 mb-2 group-hover:text-brand-primary transition-colors">{n}</div>
+            <span className="font-bold text-slate-400 uppercase text-xs tracking-widest">Questions</span>
           </button>
         ))}
       </div>
       <div className="text-center">
-        <button onClick={onBack} className="text-slate-400 font-bold uppercase text-xs tracking-widest hover:text-slate-800">Cancel</button>
+        <button onClick={onBack} className="text-slate-400 font-bold uppercase text-xs tracking-widest hover:text-ink">Cancel</button>
       </div>
     </div>
   );
@@ -1144,17 +1178,17 @@ function QuizModeView({ onBack, questions, onAskAI, onFinish }: {
     return (
       <div className="space-y-12 py-10 text-center animate-in fade-in zoom-in-95 duration-700">
         <div className="relative inline-block">
-          <div className="w-56 h-56 rounded-full border-[12px] border-slate-100 flex items-center justify-center mx-auto relative overflow-hidden bg-white shadow-inner">
+          <div className="w-56 h-56 rounded-full border-[12px] border-slate-border flex items-center justify-center mx-auto relative overflow-hidden bg-surface shadow-inner">
             <div className={`absolute bottom-0 left-0 right-0 ${percentage > 70 ? 'bg-emerald-500' : 'bg-brand-primary'} transition-all`} style={{ height: `${percentage}%`, opacity: 0.1 }}></div>
-            <span className={`text-6xl font-black ${percentage > 70 ? 'text-emerald-600' : 'text-brand-primary'}`}>{percentage}%</span>
+            <span className={`text-6xl font-black ${percentage > 70 ? 'text-emerald-500' : 'text-brand-primary'}`}>{percentage}%</span>
           </div>
-          <div className="absolute -top-4 -right-4 p-4 bg-amber-400 rounded-2xl shadow-xl shadow-amber-200 rotate-12">
+          <div className="absolute -top-4 -right-4 p-4 bg-amber-400 rounded-2xl shadow-xl shadow-amber-400/20 rotate-12">
             <Star className="w-8 h-8 text-white fill-white" />
           </div>
         </div>
 
         <div className="space-y-3">
-          <h2 className="text-4xl font-bold text-slate-800">Excellent Work!</h2>
+          <h2 className="text-4xl font-bold text-ink">Excellent Work!</h2>
           <p className="text-lg text-slate-500 font-medium">You dominated {score} out of {quizQuestions.length} questions.</p>
         </div>
 
@@ -1175,49 +1209,49 @@ function QuizModeView({ onBack, questions, onAskAI, onFinish }: {
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500 max-w-3xl mx-auto">
       <div className="flex items-center justify-between gap-6">
-        <div className="flex-1 bg-slate-200 h-2.5 rounded-full overflow-hidden border border-slate-300">
+        <div className="flex-1 bg-bg-light h-2.5 rounded-full overflow-hidden border border-slate-border">
           <motion.div 
             className="bg-brand-primary h-full"
             initial={{ width: 0 }}
             animate={{ width: `${((currentIndex + 1) / quizQuestions.length) * 100}%` }}
           />
         </div>
-        <span className="text-lg font-black text-slate-400 font-mono tracking-tighter">{currentIndex + 1} / {quizQuestions.length}</span>
+        <span className="text-lg font-black text-slate-500 font-mono tracking-tighter">{currentIndex + 1} / {quizQuestions.length}</span>
       </div>
 
-      <div className="bg-white p-10 rounded-[2.5rem] shadow-sm border border-slate-200 space-y-10 relative overflow-hidden">
+      <div className="bg-surface p-10 rounded-[2.5rem] shadow-sm border border-slate-border space-y-10 relative overflow-hidden">
         <div className="absolute top-0 right-0 p-8 opacity-5">
            <Zap className="w-32 h-32 text-brand-primary" />
         </div>
         
         <div className="relative z-10 space-y-6">
-          <span className="text-[10px] font-bold uppercase tracking-widest px-3 py-1 bg-slate-100 text-slate-500 rounded-lg">{current.subject}</span>
+          <span className="text-[10px] font-bold uppercase tracking-widest px-3 py-1 bg-brand-primary/10 text-brand-primary rounded-lg">{current.subject}</span>
           {current.passage && (
-            <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 text-sm italic text-slate-600 leading-relaxed max-h-60 overflow-y-auto">
+            <div className="bg-bg-light p-6 rounded-2xl border border-slate-border text-sm italic text-slate-500 leading-relaxed max-h-60 overflow-y-auto">
               {current.passage}
             </div>
           )}
-          <h3 className="text-3xl font-bold mt-6 leading-tight text-slate-800">{current.question}</h3>
+          <h3 className="text-3xl font-bold mt-6 leading-tight text-ink">{current.question}</h3>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative z-10">
           {current.options.map((option, idx) => {
             const letter = String.fromCharCode(65 + idx);
-            let style = "border-slate-border bg-slate-50/50 hover:bg-white hover:border-brand-primary hover:shadow-md";
-            let letterStyle = "bg-slate-100 text-slate-400 mb-0 group-hover:bg-brand-primary group-hover:text-white";
+            let style = "border-slate-border bg-bg-light/50 hover:bg-surface hover:border-brand-primary hover:shadow-md";
+            let letterStyle = "bg-bg-light text-slate-500 mb-0 group-hover:bg-brand-primary group-hover:text-white";
             
             if (showExplanation) {
               if (option === current.correct_answer) {
-                style = "border-emerald-500 bg-emerald-50 text-emerald-800 shadow-sm ring-1 ring-emerald-100";
-                letterStyle = "bg-emerald-600 text-white";
+                style = "border-emerald-500 bg-emerald-500/10 text-emerald-500 shadow-sm ring-1 ring-emerald-500/20";
+                letterStyle = "bg-emerald-500 text-white";
               }
               else if (option === selected) {
-                style = "border-rose-500 bg-rose-50 text-rose-800 shadow-sm ring-1 ring-rose-100";
-                letterStyle = "bg-rose-600 text-white";
+                style = "border-rose-500 bg-rose-500/10 text-rose-500 shadow-sm ring-1 ring-rose-500/20";
+                letterStyle = "bg-rose-500 text-white";
               }
               else style = "opacity-40 border-slate-border pointer-events-none";
             } else if (selected === option) {
-              style = "border-brand-primary bg-blue-50 text-brand-primary";
+              style = "border-brand-primary bg-brand-primary/10 text-brand-primary";
               letterStyle = "bg-brand-primary text-white";
             }
 
@@ -1241,24 +1275,24 @@ function QuizModeView({ onBack, questions, onAskAI, onFinish }: {
           animate={{ opacity: 1, scale: 1 }}
           className="space-y-6"
         >
-          <div className={`p-8 rounded-[2rem] border-2 flex items-start gap-4 ${isCorrect ? 'bg-emerald-50 border-emerald-100' : 'bg-rose-50 border-rose-100'}`}>
+          <div className={`p-8 rounded-[2rem] border-2 flex items-start gap-4 ${isCorrect ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-rose-500/10 border-rose-500/20'}`}>
             <div className="flex items-start gap-4">
-              <div className={`p-2 rounded-full flex-shrink-0 ${isCorrect ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'}`}>
+              <div className={`p-2 rounded-full flex-shrink-0 ${isCorrect ? 'bg-emerald-500/20 text-emerald-500' : 'bg-rose-500/20 text-rose-500'}`}>
                 {isCorrect ? <CheckCircle2 className="w-6 h-6" /> : <AlertCircle className="w-6 h-6" />}
               </div>
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-2 gap-4">
-                  <p className={`text-lg font-bold ${isCorrect ? 'text-emerald-900' : 'text-rose-900'}`}>
+                  <p className={`text-lg font-bold ${isCorrect ? 'text-emerald-500' : 'text-rose-500'}`}>
                     {isCorrect ? 'Fantastic! You got it right.' : 'Oops, not quite!'}
                   </p>
                   <button 
                      onClick={() => onAskAI(`I answered ${selected} to the question "${current.question}" but the correct answer is ${current.correct_answer}. Please explain why.`)}
-                     className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 hover:bg-brand-primary hover:text-white text-slate-600 rounded-xl text-xs font-bold transition-all border border-slate-200"
+                     className="flex items-center gap-2 px-3 py-1.5 bg-bg-light hover:bg-brand-primary hover:text-white text-slate-500 rounded-xl text-xs font-bold transition-all border border-slate-border"
                   >
                     <Bot className="w-4 h-4" /> Explain with AI
                   </button>
                 </div>
-                <p className={`text-sm leading-relaxed ${isCorrect ? 'text-emerald-700' : 'text-rose-700'}`}>
+                <p className={`text-sm leading-relaxed ${isCorrect ? 'text-emerald-600/80' : 'text-rose-600/80'}`}>
                   {current.explanation}
                 </p>
               </div>
@@ -1325,16 +1359,16 @@ function AITutorModal({ isOpen, onClose, initialContext }: { isOpen: boolean, on
       <motion.div 
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        className="bg-white w-full max-w-2xl h-[80vh] rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden relative z-10"
+        className="bg-surface w-full max-w-2xl h-[80vh] rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden relative z-10 border border-slate-border"
       >
-        <header className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+        <header className="p-6 border-b border-slate-border flex items-center justify-between bg-bg-light/50">
           <div className="flex items-center gap-3">
              <div className="w-10 h-10 bg-brand-primary rounded-xl flex items-center justify-center shadow-lg shadow-brand-primary/20">
                <Sparkles className="w-5 h-5 text-white" />
              </div>
              <div>
-               <h3 className="font-bold text-slate-800">Your GH AI Tutor</h3>
-               <p className="text-[10px] uppercase font-bold text-slate-400 tracking-widest">Powered by Gemini AI</p>
+               <h3 className="font-bold text-ink">Your GH AI Tutor</h3>
+               <p className="text-[10px] uppercase font-bold text-slate-500 tracking-widest">Powered by Gemini AI</p>
              </div>
           </div>
           <div className="flex items-center gap-2">
@@ -1347,19 +1381,19 @@ function AITutorModal({ isOpen, onClose, initialContext }: { isOpen: boolean, on
                 <RotateCcw className="w-5 h-5" />
               </button>
             )}
-            <button onClick={onClose} className="p-2 bg-slate-100 text-slate-400 rounded-xl hover:text-slate-600 transition-colors">
+            <button onClick={onClose} className="p-2 bg-bg-light text-slate-400 rounded-xl hover:text-ink transition-colors border border-slate-border">
               <X className="w-6 h-6" />
             </button>
           </div>
         </header>
 
-        <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-6 bg-slate-50/30">
+        <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-6 bg-bg-light/30">
           {messages.length === 0 && !loading && (
             <div className="text-center py-20 space-y-4">
-              <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto shadow-sm border border-slate-100">
-                <MessageSquare className="w-8 h-8 text-slate-300" />
+              <div className="w-16 h-16 bg-surface rounded-full flex items-center justify-center mx-auto shadow-sm border border-slate-border">
+                <MessageSquare className="w-8 h-8 text-slate-400" />
               </div>
-              <p className="text-slate-400 font-medium italic">Ask me anything about your syllabus or questions!</p>
+              <p className="text-slate-500 font-medium italic">Ask me anything about your syllabus or questions!</p>
             </div>
           )}
           {messages.map((m, i) => (
@@ -1367,7 +1401,7 @@ function AITutorModal({ isOpen, onClose, initialContext }: { isOpen: boolean, on
               <div className={`max-w-[85%] p-4 rounded-2xl text-sm leading-relaxed shadow-sm ${
                 m.role === 'user' 
                   ? 'bg-brand-primary text-white rounded-tr-none' 
-                  : 'bg-white text-slate-700 rounded-tl-none border border-slate-100'
+                  : 'bg-surface text-ink rounded-tl-none border border-slate-border'
               }`}>
                 {m.role === 'ai' ? (
                   <div className="markdown-body prose prose-sm max-w-none">
@@ -1381,7 +1415,7 @@ function AITutorModal({ isOpen, onClose, initialContext }: { isOpen: boolean, on
           ))}
           {loading && (
             <div className="flex justify-start">
-               <div className="bg-white p-4 rounded-2xl rounded-tl-none border border-slate-100 shadow-sm flex items-center gap-2">
+               <div className="bg-surface p-4 rounded-2xl rounded-tl-none border border-slate-border shadow-sm flex items-center gap-2">
                  <Loader2 className="w-4 h-4 text-brand-primary animate-spin" />
                  <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Tutor is thinking...</span>
                </div>
@@ -1389,7 +1423,7 @@ function AITutorModal({ isOpen, onClose, initialContext }: { isOpen: boolean, on
           )}
         </div>
 
-        <div className="p-6 border-t border-slate-100 bg-white">
+        <div className="p-6 border-t border-slate-border bg-surface">
           <form 
             onSubmit={(e) => { e.preventDefault(); handleSend(input); }}
             className="relative"
@@ -1397,7 +1431,7 @@ function AITutorModal({ isOpen, onClose, initialContext }: { isOpen: boolean, on
             <input 
               type="text" 
               placeholder="What would you like to know?"
-              className="w-full pl-6 pr-16 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-brand-primary focus:bg-white transition-all outline-none text-slate-800 font-medium"
+                className="w-full pl-6 pr-16 py-4 bg-bg-light border-2 border-slate-border rounded-2xl focus:border-brand-primary focus:bg-surface transition-all outline-none text-ink font-medium placeholder:text-slate-500"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               disabled={loading}
@@ -1426,7 +1460,7 @@ function StatsView({ user, stats, onBack, onReset }: {
     <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-white border-2 border-brand-primary p-0.5 shadow-lg shadow-brand-primary/10 overflow-hidden shrink-0">
+          <div className="w-16 h-16 rounded-2xl bg-surface border-2 border-brand-primary p-0.5 shadow-lg shadow-brand-primary/10 overflow-hidden shrink-0">
              <img 
                src={user?.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.uid}`} 
                alt="Profile" 
@@ -1435,14 +1469,14 @@ function StatsView({ user, stats, onBack, onReset }: {
              />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-slate-800">{user?.displayName || 'Mastery Profile'}</h1>
+            <h1 className="text-3xl font-bold text-ink">{user?.displayName || 'Mastery Profile'}</h1>
             <p className="text-slate-500 font-medium">{user?.email || 'AceExams.gh Learner'}</p>
           </div>
         </div>
         <div className="flex gap-3">
           <button 
             onClick={onReset} 
-            className="px-6 py-3 rounded-2xl font-bold text-sm bg-rose-50 text-rose-600 border border-rose-100 hover:bg-rose-100 transition-colors"
+            className="px-6 py-3 rounded-2xl font-bold text-sm bg-rose-500/10 text-rose-600 border border-rose-500/20 hover:bg-rose-500/20 transition-colors"
           >
             Reset Progress
           </button>
@@ -1451,49 +1485,49 @@ function StatsView({ user, stats, onBack, onReset }: {
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-1 bg-gradient-to-br from-slate-800 to-slate-900 p-10 rounded-[2.5rem] text-white space-y-8 shadow-2xl relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 blur-3xl"></div>
+        <div className="lg:col-span-1 bg-gradient-to-br from-brand-primary/10 to-indigo-500/10 dark:from-slate-800 dark:to-slate-900 p-10 rounded-[2.5rem] text-ink dark:text-white space-y-8 shadow-sm border border-brand-primary/20 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-brand-primary/5 rounded-full -mr-16 -mt-16 blur-sm opacity-10"></div>
           <div className="flex items-center justify-between relative z-10">
-            <span className="bg-white/10 border border-white/10 px-3 py-1 rounded-lg text-[10px] font-extrabold uppercase tracking-widest text-white/60">Learning Streak</span>
-            <Zap className="w-8 h-8 fill-amber-300 text-amber-300 drop-shadow-glow" />
+            <span className="bg-brand-primary/10 border border-brand-primary/20 px-3 py-1 rounded-lg text-[10px] font-extrabold uppercase tracking-widest text-brand-primary">Learning Streak</span>
+            <Zap className="w-8 h-8 fill-amber-500 text-amber-500" />
           </div>
           <div className="space-y-2 relative z-10">
             <div className="flex items-baseline gap-2">
               <p className="text-7xl font-bold tracking-tighter">{stats.streak}</p>
-              <p className="text-xl font-bold text-white/40 uppercase tracking-widest">Days</p>
+              <p className="text-xl font-bold text-slate-400 dark:text-white/40 uppercase tracking-widest">Days</p>
             </div>
-            <p className="text-white/40 font-bold uppercase text-xs tracking-widest leading-relaxed">
+            <p className="text-slate-500 dark:text-white/40 font-bold uppercase text-xs tracking-widest leading-relaxed">
               You're in the top 5% of active students this week! Keep it up.
             </p>
           </div>
           <div className="flex gap-2 relative z-10">
             {Array.from({ length: 7 }).map((_, i) => (
-              <div key={i} className={`h-1.5 flex-1 rounded-full ${i < stats.streak ? 'bg-amber-400' : 'bg-white/10'}`}></div>
+              <div key={i} className={`h-1.5 flex-1 rounded-full ${i < stats.streak ? 'bg-amber-400' : 'bg-slate-200 dark:bg-white/5'}`}></div>
             ))}
           </div>
         </div>
 
         <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="bg-white p-8 rounded-[2.5rem] border border-slate-border flex flex-col justify-between shadow-sm group hover:border-amber-500 transition-all">
+          <div className="bg-surface p-8 rounded-[2.5rem] border border-slate-border flex flex-col justify-between shadow-sm group hover:border-amber-500 transition-all">
             <div className="space-y-1">
-              <div className="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <div className="w-12 h-12 bg-amber-500/10 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                 <Star className="w-6 h-6 text-amber-600 fill-amber-600" />
               </div>
               <p className="text-slate-400 font-bold uppercase text-[10px] tracking-widest">Experience Points</p>
-              <p className="text-4xl font-bold text-slate-800 tracking-tighter">{stats.points.toLocaleString()}</p>
+              <p className="text-4xl font-bold text-ink tracking-tighter">{stats.points.toLocaleString()}</p>
             </div>
             <p className="text-xs text-slate-400 mt-4 font-medium italic">Earned from quizzes & study.</p>
           </div>
 
-          <div className="bg-white p-8 rounded-[2.5rem] border border-slate-border flex flex-col justify-between shadow-sm group hover:border-emerald-500 transition-all">
+          <div className="bg-surface p-8 rounded-[2.5rem] border border-slate-border flex flex-col justify-between shadow-sm group hover:border-emerald-500 transition-all">
             <div className="space-y-1">
-              <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <CheckCircle2 className="w-6 h-6 text-emerald-600" />
+              <div className="w-12 h-12 bg-emerald-500/10 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <CheckCircle2 className="w-6 h-6 text-emerald-500" />
               </div>
-              <p className="text-slate-400 font-bold uppercase text-[10px] tracking-widest">Accuracy Record</p>
-              <p className="text-4xl font-bold text-slate-800 tracking-tighter">{stats.totalAttempted > 0 ? Math.round((stats.totalCorrect / stats.totalAttempted) * 100) : 0}%</p>
+              <p className="text-slate-500 font-bold uppercase text-[10px] tracking-widest">Accuracy Record</p>
+              <p className="text-4xl font-bold text-ink tracking-tighter">{stats.totalAttempted > 0 ? Math.round((stats.totalCorrect / stats.totalAttempted) * 100) : 0}%</p>
             </div>
-            <div className="w-full h-1.5 bg-slate-100 rounded-full mt-4 overflow-hidden">
+            <div className="w-full h-1.5 bg-bg-light rounded-full mt-4 overflow-hidden">
               <motion.div 
                 className="h-full bg-emerald-500"
                 initial={{ width: 0 }}
@@ -1506,8 +1540,8 @@ function StatsView({ user, stats, onBack, onReset }: {
 
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-slate-800">Achievements</h2>
-          <div className="px-3 py-1 bg-amber-50 rounded-full text-amber-700 text-xs font-bold ring-1 ring-amber-100">{Math.floor(stats.totalCorrect / 10)} Badges Unlocked</div>
+          <h2 className="text-2xl font-bold text-ink">Achievements</h2>
+          <div className="px-3 py-1 bg-brand-primary/10 rounded-full text-brand-primary text-xs font-bold ring-1 ring-brand-primary/20">{Math.floor(stats.totalCorrect / 10)} Badges Unlocked</div>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
           {[1, 5, 10, 20, 50, 100].map(n => {
@@ -1516,18 +1550,18 @@ function StatsView({ user, stats, onBack, onReset }: {
               <motion.div 
                 key={n} 
                 whileHover={earned ? { y: -5 } : {}}
-                className={`relative p-6 rounded-[2rem] flex flex-col items-center justify-center gap-4 border-2 transition-all group ${earned ? 'bg-white border-amber-200 text-amber-600 shadow-lg shadow-amber-100' : 'bg-slate-50 border-slate-100 text-slate-300 opacity-40 grayscale'}`}
+                className={`relative p-6 rounded-[2rem] flex flex-col items-center justify-center gap-4 border-2 transition-all group ${earned ? 'bg-surface border-amber-500/50 text-amber-500 shadow-lg shadow-amber-500/10' : 'bg-bg-light border-slate-border text-slate-500 opacity-40 grayscale'}`}
               >
-                <div className={`p-4 rounded-2xl ${earned ? 'bg-amber-100' : 'bg-slate-100'}`}>
-                  <Trophy className={`w-10 h-10 ${earned ? 'text-amber-600' : 'text-slate-300'}`} />
+                <div className={`p-4 rounded-2xl ${earned ? 'bg-amber-500/10' : 'bg-slate-border'}`}>
+                  <Trophy className={`w-10 h-10 ${earned ? 'text-amber-500' : 'text-slate-500'}`} />
                 </div>
                 <div className="text-center">
                    <p className="text-lg font-black tracking-tighter">{n}</p>
                    <p className="text-[10px] font-bold uppercase tracking-widest opacity-60">Successes</p>
                 </div>
                 {!earned && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-slate-50/20 backdrop-blur-[1px] rounded-[2rem]">
-                    <X className="w-6 h-6 text-slate-200" />
+                  <div className="absolute inset-0 flex items-center justify-center bg-bg-light/20 backdrop-blur-[1px] rounded-[2rem]">
+                    <X className="w-6 h-6 text-slate-500" />
                   </div>
                 )}
               </motion.div>
@@ -1537,8 +1571,8 @@ function StatsView({ user, stats, onBack, onReset }: {
       </div>
 
       <div className="space-y-6">
-        <h2 className="text-2xl font-bold text-slate-800">Subject Mastery</h2>
-        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-border shadow-sm">
+        <h2 className="text-2xl font-bold text-ink">Subject Mastery</h2>
+        <div className="bg-surface p-8 rounded-[2.5rem] border border-slate-border shadow-sm">
           <div className="space-y-8">
             {[
               { id: 'math', name: 'Core Mathematics', label: 'Mathematics', color: 'bg-emerald-500' },
@@ -1552,10 +1586,10 @@ function StatsView({ user, stats, onBack, onReset }: {
               return (
                 <div key={sub.id} className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <p className="text-lg font-bold text-slate-700">{sub.label || sub.name}</p>
-                    <p className="text-lg font-bold text-slate-400">{proficiency}%</p>
+                    <p className="text-lg font-bold text-ink">{sub.label || sub.name}</p>
+                    <p className="text-lg font-bold text-slate-500">{proficiency}%</p>
                   </div>
-                  <div className="w-full h-2.5 bg-slate-50 rounded-full overflow-hidden border border-slate-100">
+                  <div className="w-full h-2.5 bg-bg-light rounded-full overflow-hidden border border-slate-border">
                     <motion.div 
                       className={`h-full ${sub.color}`}
                       initial={{ width: 0 }}
