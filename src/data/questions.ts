@@ -894,5 +894,441 @@ export const QUESTIONS: Question[] = [
     options: ['Plastic', 'Clay', 'Nylon', 'Polyester'],
     correct_answer: 'Clay',
     explanation: 'Clay is a natural material obtained from the earth, unlike plastic, nylon, and polyester which are synthetic (man-made).'
+  },
+  {
+    id: '78',
+    exam_type: 'WASSCE',
+    subject_type: 'Core',
+    subject: 'Social Studies',
+    year: 2024,
+    question: 'Positive work attitude most brings about',
+    options: ['social change.', 'wage increase.', 'increased output', 'improved in technology.'],
+    correct_answer: 'increased output',
+    explanation: 'A positive attitude towards work enhances efficiency and commitment, directly leading to higher productivity and output.'
+  },
+  {
+    id: '79',
+    exam_type: 'WASSCE',
+    subject_type: 'Core',
+    subject: 'Social Studies',
+    year: 2024,
+    question: 'One advantage of tolerance to the Ghanaian society is that it brings',
+    options: ['hard work.', 'indifference.', 'harmony.', 'impatience.'],
+    correct_answer: 'harmony.',
+    explanation: 'Tolerance promotes mutual understanding and peaceful coexistence among diverse groups, resulting in social harmony.'
+  },
+  {
+    id: '80',
+    exam_type: 'WASSCE',
+    subject_type: 'Core',
+    subject: 'Integrated Science',
+    year: 2024,
+    question: 'The process by which liquid changes into vapour at a particular temperature is known as',
+    options: ['boiling.', 'condensation.', 'evaporation.', 'melting.'],
+    correct_answer: 'evaporation.',
+    explanation: 'Evaporation is the vaporization of a liquid that occurs from its surface and can happen at any temperature below the boiling point.'
+  },
+  {
+    id: '81',
+    exam_type: 'WASSCE',
+    subject_type: 'Core',
+    subject: 'Integrated Science',
+    year: 2024,
+    question: 'Which of the following organisms has neither a nucleus nor membrane bound organelles?',
+    options: ['Bacteria', 'Mucor', 'Paramecium', 'Spirogyra'],
+    correct_answer: 'Bacteria',
+    explanation: 'Bacteria are prokaryotic organisms, which lack a defined nucleus and membrane-bound organelles like mitochondria or chloroplasts.'
+  },
+  {
+    id: '82',
+    exam_type: 'WASSCE',
+    subject_type: 'Elective',
+    subject: 'Elective ICT',
+    year: 2025,
+    question: 'The computer-based tools used by an organization to support information processing needs is known as',
+    options: [
+      'information storage tools.',
+      'information retrieval tools.',
+      'information processing tools.',
+      'information technology tools.'
+    ],
+    correct_answer: 'information technology tools.',
+    explanation: 'Information Technology (IT) encompasses common systems, tools, and methods for managing and processing information.'
+  },
+  {
+    id: '83',
+    exam_type: 'WASSCE',
+    subject_type: 'Elective',
+    subject: 'Elective ICT',
+    year: 2025,
+    question: 'A digital audio file that is downloaded from the Internet for playback on personal computers or mobile devices is referred to as',
+    options: ['cookies.', 'googlet.', 'podcast.', 'YouTube.'],
+    correct_answer: 'podcast.',
+    explanation: 'A podcast is a digital audio file made available on the Internet for downloading to a computer or mobile device.'
+  },
+  {
+    id: '84',
+    exam_type: 'WASSCE',
+    subject_type: 'Core',
+    subject: 'Core Mathematics',
+    year: 2025,
+    question: 'A town P is due south of town Q and town R is on a bearing of 125° from Q. If town R is 20 km due east of P, find |PQ|.',
+    options: ['20 km', '15 km', '12 km', '14 km'],
+    correct_answer: '14 km',
+    explanation: 'Using trigonometry: tan(125°-90°) = 20/PQ. tan(35°) = 20/PQ. PQ = 20/tan(35°) ≈ 14 km.'
+  },
+  {
+    id: '85',
+    exam_type: 'WASSCE',
+    subject_type: 'Core',
+    subject: 'Core Mathematics',
+    year: 2025,
+    question: 'If V = πr²h and S = 2πrh, express V in terms of r and S.',
+    options: ['V = 2r/S', 'V = 1/2 rS', 'V = 2rS', 'V = r/2S'],
+    correct_answer: 'V = 1/2 rS',
+    explanation: 'V = πr²h = (1/2 * r) * (2πrh) = 1/2 * r * S.'
+  },
+  {
+    id: '86',
+    exam_type: 'WASSCE',
+    subject_type: 'Core',
+    subject: 'Social Studies',
+    year: 2025,
+    question: 'Under the Interstate Succession Law (PNDCL 111), extended family members are forbidden to eject surviving spouse and children from the',
+    options: ['patrilocal residence.', 'matrimonial residence.', 'matrilineal residence.', 'paternal home.'],
+    correct_answer: 'matrimonial residence.',
+    explanation: 'PNDCL 111 was enacted to protect the rights of spouses and children to the matrimonial home and its contents upon the death of a spouse intestate.'
+  },
+  {
+    id: '87',
+    exam_type: 'WASSCE',
+    subject_type: 'Core',
+    subject: 'Integrated Science',
+    year: 2025,
+    question: 'Which of the following animals is a non-ruminant herbivore?',
+    options: ['Cattle', 'Poultry', 'Pig', 'Rabbit'],
+    correct_answer: 'Rabbit',
+    explanation: 'Rabbits are hindgut fermenters. They eat plants but do not have a multi-chambered stomach (rumen) like cattle.'
+  },
+  {
+    id: '88',
+    exam_type: 'WASSCE',
+    subject_type: 'Core',
+    subject: 'Integrated Science',
+    year: 2025,
+    question: 'The part of the human brain that controls body temperature is',
+    options: ['Cortex', 'medulla oblongata.', 'hypothalamus.', 'cerebellum.'],
+    correct_answer: 'hypothalamus.',
+    explanation: 'The hypothalamus acts as the body\'s thermostat, regulating temperature, hunger, thirst, and other homeostatic systems.'
+  },
+  {
+    id: '89',
+    exam_type: 'WASSCE',
+    subject_type: 'Elective',
+    subject: 'Elective ICT',
+    year: 2025,
+    question: 'The process of removing a portion of a graphic in a design is termed',
+    options: ['cutting.', 'resizing.', 'scaling.', 'cropping.'],
+    correct_answer: 'cropping.',
+    explanation: 'Cropping refers to the removal of the outer parts of an image to improve framing or emphasize a subject.'
+  },
+  {
+    id: '90',
+    exam_type: 'WASSCE',
+    subject_type: 'Elective',
+    subject: 'Elective ICT',
+    year: 2025,
+    question: 'The feature in Spreadsheet application that displays only a specific data according to a given criteria is best known as',
+    options: ['sort.', 'filter.', 'pivot.', 'query.'],
+    correct_answer: 'filter.',
+    explanation: 'Filtering in a spreadsheet allows you to hide rows that do not meet certain criteria, showing only the data you want to see.'
+  },
+  {
+    id: '91',
+    exam_type: 'WASSCE',
+    subject_type: 'Core',
+    subject: 'Core Mathematics',
+    year: 2025,
+    question: 'The first 4 terms of an Arithmetic Progression (A.P) are 8, x, y and 17. Find the value of (x+y).',
+    options: ['20', '25', '40', '31'],
+    correct_answer: '25',
+    explanation: 'Common difference (d) = (17-8)/3 = 3. x = 8+3=11. y=11+3=14. x+y = 11+14 = 25.'
+  },
+  {
+    id: '92',
+    exam_type: 'WASSCE',
+    subject_type: 'Core',
+    subject: 'Social Studies',
+    year: 2025,
+    question: 'An effective national leader is one who is dynamic, selfless, patriotic and always upholds',
+    options: [
+      'democracy and individual responsibility.',
+      'democracy and self-determination.',
+      'rule of law and partisan politics.',
+      'rule of law and national integration.'
+    ],
+    correct_answer: 'rule of law and national integration.',
+    explanation: 'National integration and adherence to the rule of law are cornerstone values for effective leadership in a diverse nation like Ghana.'
+  },
+  {
+    id: '93',
+    exam_type: 'WASSCE',
+    subject_type: 'Core',
+    subject: 'Integrated Science',
+    year: 2025,
+    question: 'Which of the following blood vessels is the pressure highest?',
+    options: ['Hepatic artery', 'Dorsal aorta', 'Renal artery', 'Vena cava'],
+    correct_answer: 'Dorsal aorta',
+    explanation: 'The aorta is the largest artery in the body and receives blood directly from the left ventricle under high pressure.'
+  },
+  {
+    id: '94',
+    exam_type: 'WASSCE',
+    subject_type: 'Elective',
+    subject: 'Elective ICT',
+    year: 2025,
+    question: 'The Technology used by computer systems to display information is termed',
+    options: ['data recovery.', 'data structures.', 'data presentation.', 'data representation.'],
+    correct_answer: 'data representation.',
+    explanation: 'Data representation is the process of using symbols to stand for data, allowing computer systems to display information in meaningful ways.'
+  },
+  {
+    id: '95',
+    exam_type: 'WASSCE',
+    subject_type: 'Elective',
+    subject: 'Elective ICT',
+    year: 2025,
+    question: 'The extension name for saving a QBASIC file is',
+    options: ['.bas.', '.jpg.', '.cmd.', '.qbas.'],
+    correct_answer: '.bas.',
+    explanation: 'QBASIC source files are traditionally saved with the .bas extension.'
+  },
+  {
+    id: '96',
+    exam_type: 'WASSCE',
+    subject_type: 'Core',
+    subject: 'Integrated Science',
+    year: 2025,
+    question: 'Conversion of nitrites to nitrates in the nitrogen cycle is caused by',
+    options: ['Nitrosomonas', 'Azotobacter', 'Nitrobacter', 'Rhizobium'],
+    correct_answer: 'Nitrobacter',
+    explanation: 'Nitrobacter bacteria oxidize nitrites into nitrates, which are more readily usable by plants.'
+  },
+  {
+    id: '97',
+    exam_type: 'WASSCE',
+    subject_type: 'Core',
+    subject: 'Social Studies',
+    year: 2025,
+    question: 'The most effective way of controlling rapid population growth in Ghana is through',
+    options: [
+      'promotion of adolescent chastity.',
+      'creation of vacation jobs for girls.',
+      'free distribution of contraceptives in rural areas.',
+      'extensive application of family planning services.'
+    ],
+    correct_answer: 'extensive application of family planning services.',
+    explanation: 'Comprehensive family planning services provide the education and means necessary for citizens to choose their family size.'
+  },
+  {
+    id: '98',
+    exam_type: 'WASSCE',
+    subject_type: 'Core',
+    subject: 'Core Mathematics',
+    year: 2025,
+    question: 'Find the mean deviation of 2, 5, 7, 9 and 15.',
+    options: ['2.45', '3.52', '5.23', '4.14'],
+    correct_answer: '3.52',
+    explanation: 'Mean = (2+5+7+9+15)/5 = 38/5 = 7.6. Deviations: |2-7.6|=5.6, |5-7.6|=2.6, |7-7.6|=0.6, |9-7.6|=1.4, |15-7.6|=7.4. Mean Dev = (5.6+2.6+0.6+1.4+7.4)/5 = 17.6/5 = 3.52.'
+  },
+  {
+    id: '99',
+    exam_type: 'WASSCE',
+    subject_type: 'Elective',
+    subject: 'Elective ICT',
+    year: 2025,
+    question: 'Which of the following database keys uniquely identifies a record?',
+    options: ['Foreign key', 'Indexing key', 'Primary key', 'Duplicate key'],
+    correct_answer: 'Primary key',
+    explanation: 'A primary key is a special relational database table column designated to uniquely identify each table record.'
+  },
+  {
+    id: '100',
+    exam_type: 'WASSCE',
+    subject_type: 'Elective',
+    subject: 'Elective ICT',
+    year: 2025,
+    question: 'Which of the following HTML tags creates the biggest headings in a browser?',
+    options: ['<h1>', '<h2>', '<h3>', '<h6>'],
+    correct_answer: '<h1>',
+    explanation: 'The <h1> tag defines the most important heading. Browser displays <h1> headings in a larger font than other headings.'
+  },
+  {
+    id: '101',
+    exam_type: 'WASSCE',
+    subject_type: 'Core',
+    subject: 'Integrated Science',
+    year: 2025,
+    question: 'Which part of the leaf is the amount of glucose produced during photosynthesis the least?',
+    options: ['Spongy mesophyll', 'Guard cell', 'Palisade mesophyll', 'Upper epidermis'],
+    correct_answer: 'Upper epidermis',
+    explanation: 'The upper epidermis generally lacks chloroplasts and is primarily for protection, thus it produces the least glucose.'
+  },
+  {
+    id: '102',
+    exam_type: 'WASSCE',
+    subject_type: 'Core',
+    subject: 'Social Studies',
+    year: 2025,
+    question: 'Attitudes and values relevant to peace building include',
+    options: [
+      'forgiveness and hardwork.',
+      'tolerance and fairness.',
+      'honesty and purity.',
+      'forgiveness and charity.'
+    ],
+    correct_answer: 'tolerance and fairness.',
+    explanation: 'Tolerance for others and a sense of justice/fairness are fundamental to maintaining social peace.'
+  },
+  {
+    id: '103',
+    exam_type: 'WASSCE',
+    subject_type: 'Core',
+    subject: 'Core Mathematics',
+    year: 2025,
+    question: 'A fair die is tossed once. What is the probability of obtaining a 3 or 5?',
+    options: ['1/6', '1/3', '1/2', '2/3'],
+    correct_answer: '1/3',
+    explanation: 'Total outcomes = 6. Favorable outcomes (3 or 5) = 2. Probability = 2/6 = 1/3.'
+  },
+  {
+    id: '104',
+    exam_type: 'WASSCE',
+    subject_type: 'Core',
+    subject: 'Social Studies',
+    year: 2024,
+    question: 'The family of orientation refers to the',
+    options: [
+      'family in which the individual is raised.',
+      'nuclear family in which the individual is a parent.',
+      'family started by the individual.',
+      'extended family with many young children.'
+    ],
+    correct_answer: 'family in which the individual is raised.',
+    explanation: 'A family of orientation is the family you were born into or raised in, while a family of procreation is the one you create as an adult.'
+  },
+  {
+    id: '105',
+    exam_type: 'WASSCE',
+    subject_type: 'Core',
+    subject: 'Integrated Science',
+    year: 2024,
+    question: 'A dibber is used for',
+    options: ['dehusking.', 'pruning.', 'thinning.', 'planting.'],
+    correct_answer: 'planting.',
+    explanation: 'A dibber is a pointed wooden stick for making holes in the ground so that seeds, seedlings or small bulbs can be planted.'
+  },
+  {
+    id: '106',
+    exam_type: 'WASSCE',
+    subject_type: 'Core',
+    subject: 'Social Studies',
+    year: 2023,
+    question: 'The best way of resolving parent-child conflict is',
+    options: [
+      'being consistent in dealing with children.',
+      'avoiding over-protection of children.',
+      'adhering to the rules of the home.',
+      'keeping children away from misbehaviour.'
+    ],
+    correct_answer: 'being consistent in dealing with children.',
+    explanation: 'Consistency in parenting provides clear boundaries and expectations, which helps reduce misunderstandings and conflict.'
+  },
+  {
+    id: '107',
+    exam_type: 'WASSCE',
+    subject_type: 'Core',
+    subject: 'Social Studies',
+    year: 2023,
+    question: 'Irresponsible parenting results in',
+    options: ['large family size.', 'child abuse.', 'poverty.', 'peer pressure.'],
+    correct_answer: 'child abuse.',
+    explanation: 'Neglect and lack of supervision, which are hallmarks of irresponsible parenting, can lead to various forms of child abuse.'
+  },
+  {
+    id: '108',
+    exam_type: 'WASSCE',
+    subject_type: 'Core',
+    subject: 'Social Studies',
+    year: 2022,
+    question: 'The process of socialization in every society starts from the',
+    options: ['community.', 'school.', 'family.', 'church.'],
+    correct_answer: 'family.',
+    explanation: 'The family is the primary agency of socialization, where an individual first learns values, norms, and behaviors of their society.'
+  },
+  {
+    id: '109',
+    exam_type: 'WASSCE',
+    subject_type: 'Core',
+    subject: 'Social Studies',
+    year: 2022,
+    question: 'Ghanaians need to perform their responsibilities in order to',
+    options: [
+      'raise funds for infrastructural development.',
+      'serve in the security services.',
+      'prevent criminal acts.',
+      'promote presidential system of government.'
+    ],
+    correct_answer: 'prevent criminal acts.',
+    explanation: 'Civic responsibilities like reporting crimes and obeying laws are essential for maintaining public order and safety.'
+  },
+  {
+    id: '110',
+    exam_type: 'WASSCE',
+    subject_type: 'Core',
+    subject: 'Integrated Science',
+    year: 2021,
+    question: 'Natural fats are composed of',
+    options: [
+      'carbon, hydrogen, and oxygen',
+      'carbon, hydrogen, and nitrogen',
+      'carbon, oxygen, and nitrogen',
+      'hydrogen, oxygen and nitrogen'
+    ],
+    correct_answer: 'carbon, hydrogen, and oxygen',
+    explanation: 'Fats are lipids composed of carbon, hydrogen, and oxygen atoms.'
+  },
+  {
+    id: '111',
+    exam_type: 'WASSCE',
+    subject_type: 'Core',
+    subject: 'Integrated Science',
+    year: 2021,
+    question: 'Ash from burnt plant material can be used to prepare local soap because it contains',
+    options: ['potassium chloride', 'potassium hydroxide', 'hydrogen sulphide.', 'ammonia.'],
+    correct_answer: 'potassium hydroxide',
+    explanation: 'Wood ash contains potassium carbonate which, when leached, produces an alkaline solution (potash/potassium hydroxide) used in saponification.'
+  },
+  {
+    id: '112',
+    exam_type: 'WASSCE',
+    subject_type: 'Core',
+    subject: 'Core Mathematics',
+    year: 2021,
+    question: 'Simplify: (11two)²',
+    options: ['1001two', '1101two', '101two', '10001two'],
+    correct_answer: '1001two',
+    explanation: '(11two) = 3ten. 3² = 9ten. 9ten = 1001two.'
+  },
+  {
+    id: '113',
+    exam_type: 'WASSCE',
+    subject_type: 'Core',
+    subject: 'Core Mathematics',
+    year: 2021,
+    question: 'Find the 5th term of the sequence 2, 5, 10, 17, ...',
+    options: ['22', '24', '36', '26'],
+    correct_answer: '26',
+    explanation: 'The sequence follows the pattern n² + 1. 1²+1=2, 2²+1=5, 3²+1=10, 4²+1=17. 5th term = 5² + 1 = 26.'
   }
 ];

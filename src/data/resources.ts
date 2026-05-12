@@ -95,5 +95,33 @@ export const SYLLABUS_DATA: SyllabusTopic[] = [
     title: 'Cell Biology and Genetics',
     description: 'Study of the basic building blocks of life and inheritance.',
     subtopics: ['Cell Structure', 'Enzymes', 'Mendelian Genetics', 'DNA and RNA']
+  },
+  {
+    id: 'ict-1',
+    subject: 'Elective ICT',
+    title: 'Computer Appreciation and Systems',
+    description: 'Learn about hardware, software, and the components that make up a computer system.',
+    subtopics: ['Input and Output Devices', 'Storage Media', 'System Software', 'Application Software']
+  },
+  {
+    id: 'ict-2',
+    subject: 'Elective ICT',
+    title: 'Networking and HTML',
+    description: 'Master the basics of computer networks and web development.',
+    subtopics: ['Network Topologies', 'Network Media', 'HTML Tagging', 'Forms and Lists']
+  },
+  {
+    id: 'phys-1',
+    subject: 'Physics',
+    title: 'Mechanics',
+    description: 'The study of motion, forces, energy, and momentum.',
+    subtopics: ['Kinematics', 'Dynamics', 'Work, Energy and Power', 'Circular Motion']
+  },
+  {
+    id: 'chem-1',
+    subject: 'Chemistry',
+    title: 'Chemical Bonding and Energy',
+    description: 'Explore how atoms combine and the energy changes involved.',
+    subtopics: ['Ionic and Covalent Bonds', 'Intermolecular Forces', 'Hess\'s Law', 'Kinetics']
   }
 ];
