@@ -1,26 +1,28 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700;800&display=swap');
 @import "tailwindcss";
 
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Outfit", sans-serif;
+  --font-display: "Poppins", sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 
-  --color-brand-primary: #2563eb; /* Blue 600 */
-  --color-brand-secondary: #e11d48; /* Rose 600 */
-  --color-brand-accent: #059669; /* Emerald 600 */
-  --color-bg-light: #ffffff; /* Brighter background */
+  --color-brand-primary: #6366f1; /* Indigo 500 */
+  --color-brand-secondary: #8b5cf6; /* Violet 500 */
+  --color-brand-accent: #f59e0b; /* Amber 500 */
+  --color-brand-warm: #fb923c; /* Orange 400 */
+  --color-bg-light: #fafaf9; /* Stone 50 - warmer background */
   --color-surface: #ffffff; 
-  --color-ink: #0f172a; /* Deeper contrast for readability */
-  --color-slate-border: #f1f5f9; /* Subtle border */
+  --color-ink: #1c1917; /* Stone 900 */
+  --color-slate-border: #e7e5e4; /* Stone 200 */
 }
 
 @variant dark (&:where(.dark, .dark *));
 
 .dark {
-  --color-bg-light: #0f172a; /* Lighter dark background */
-  --color-surface: #1e293b; 
-  --color-ink: #f8fafc; 
-  --color-slate-border: #334155; 
+  --color-bg-light: #1c1917; /* Stone 900 */
+  --color-surface: #292524; /* Stone 800 */
+  --color-ink: #fafaf9; /* Stone 50 */
+  --color-slate-border: #44403c; /* Stone 700 */
 }
 
 @layer base {
@@ -35,50 +37,58 @@
 
 @layer components {
   .btn-primary {
-    @apply bg-brand-primary text-white px-6 py-2.5 rounded-xl font-bold shadow-md hover:bg-blue-700 hover:shadow-lg transition-all active:scale-95 disabled:opacity-50;
+    @apply bg-brand-primary text-white px-6 py-2.5 rounded-2xl font-bold shadow-lg shadow-brand-primary/20 hover:brightness-110 hover:shadow-xl hover:shadow-brand-primary/30 transition-all active:scale-95 disabled:opacity-50;
   }
   
   .btn-secondary {
-    @apply bg-surface text-ink border border-slate-border px-6 py-2.5 rounded-xl font-bold shadow-sm hover:bg-bg-light transition-all active:scale-95;
+    @apply bg-surface text-ink border border-slate-border px-6 py-2.5 rounded-2xl font-bold shadow-sm hover:bg-bg-light transition-all active:scale-95;
+  }
+
+  .btn-accent {
+    @apply bg-brand-accent text-white px-6 py-2.5 rounded-2xl font-bold shadow-lg shadow-brand-accent/20 hover:brightness-110 hover:shadow-xl transition-all active:scale-95;
   }
 
   .nav-item {
-    @apply py-2 px-4 rounded-lg flex items-center gap-3 transition-all font-semibold text-slate-500 hover:bg-bg-light hover:text-brand-primary;
+    @apply py-3 px-5 rounded-2xl flex items-center gap-3 transition-all font-semibold text-stone-500 hover:bg-white hover:text-brand-primary hover:shadow-sm;
   }
 
   .nav-item-active {
-    @apply bg-brand-primary/10 text-brand-primary shadow-sm border border-brand-primary/20;
+    @apply bg-white text-brand-primary shadow-md border border-brand-primary/5;
   }
 
   .glass-card {
-    @apply bg-surface border border-slate-border rounded-2xl p-6 shadow-sm;
+    @apply bg-white/80 backdrop-blur-md border border-slate-border rounded-[2rem] p-8 shadow-sm;
   }
 
   .interactive-card {
-    @apply bg-surface rounded-2xl p-6 shadow-sm hover:shadow-md transition-all cursor-pointer border border-slate-border;
+    @apply bg-white rounded-[2rem] p-8 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer border border-stone-100;
+  }
+
+  .pill {
+    @apply px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider;
   }
 
   .markdown-body {
-    @apply space-y-3;
+    @apply space-y-4;
   }
-  .markdown-body h1 { @apply text-xl font-bold; }
-  .markdown-body h2 { @apply text-lg font-bold; }
-  .markdown-body h3 { @apply text-base font-bold; }
-  .markdown-body p { @apply text-sm leading-relaxed; }
-  .markdown-body ul { @apply list-disc list-inside space-y-1; }
-  .markdown-body ol { @apply list-decimal list-inside space-y-1; }
-  .markdown-body a { @apply text-brand-primary underline; }
-  .markdown-body blockquote { @apply border-l-4 border-slate-border pl-4 italic text-slate-500; }
-  .markdown-body code { @apply bg-bg-light px-1.5 py-0.5 rounded font-mono text-xs; }
-  .markdown-body pre { @apply bg-bg-light p-3 rounded-xl overflow-x-auto border border-slate-border; }
-  .markdown-body pre code { @apply bg-transparent p-0; }
+  .markdown-body h1 { @apply text-2xl font-display font-bold; }
+  .markdown-body h2 { @apply text-xl font-display font-bold; }
+  .markdown-body h3 { @apply text-lg font-display font-bold; }
+  .markdown-body p { @apply text-base leading-relaxed text-stone-600; }
+  .markdown-body ul { @apply list-disc list-inside space-y-2; }
+  .markdown-body ol { @apply list-decimal list-inside space-y-2; }
+  .markdown-body a { @apply text-brand-primary underline hover:text-brand-secondary transition-colors; }
+  .markdown-body blockquote { @apply border-l-8 border-brand-primary/20 pl-6 py-2 italic text-stone-500 bg-stone-50 rounded-r-xl; }
+  .markdown-body code { @apply bg-stone-100 px-2 py-1 rounded font-mono text-sm text-brand-secondary; }
+  .markdown-body pre { @apply bg-stone-900 p-5 rounded-2xl overflow-x-auto border border-stone-800 text-stone-100; }
+  .markdown-body pre code { @apply bg-transparent p-0 text-stone-100 font-normal; }
 
   /* Flip Card Styles */
   .flip-card {
     position: relative;
     width: 100%;
-    height: 400px;
-    perspective: 1000px;
+    height: 450px;
+    perspective: 1500px;
   }
 
   .flip-card-inner {
@@ -86,7 +96,7 @@
     width: 100%;
     height: 100%;
     text-align: center;
-    transition: transform 0.7s;
+    transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
     transform-style: preserve-3d;
   }
 
@@ -99,21 +109,21 @@
     width: 100%;
     height: 100%;
     backface-visibility: hidden;
-    border-radius: 2rem; /* 32px */
+    border-radius: 2.5rem;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 2rem;
+    padding: 3rem;
   }
 
   .flip-card-front {
-    @apply bg-surface border-2 border-brand-primary/10 shadow-inner text-ink;
+    @apply bg-white border border-stone-100 shadow-xl text-ink;
   }
 
   .flip-card-back {
     transform: rotateY(180deg);
-    @apply bg-brand-primary text-white shadow-xl;
+    @apply bg-gradient-to-br from-brand-primary to-brand-secondary text-white shadow-2xl;
   }
 }
 
@@ -124,5 +134,13 @@
   .no-scrollbar {
     -ms-overflow-style: none; /* IE and Edge */
     scrollbar-width: none; /* Firefox */
+  }
+
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-brand-primary to-brand-secondary;
+  }
+
+  .bg-warm-gradient {
+    @apply bg-gradient-to-br from-brand-warm/10 to-brand-accent/5;
   }
 }

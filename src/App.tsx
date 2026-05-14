@@ -28,7 +28,8 @@ import {
   Send,
   Loader2,
   Moon,
-  Sun
+  Sun,
+  Heart
 } from 'lucide-react';
 import { Question, UserStats, ExamType, SubjectType } from './types';
 import { QUESTIONS } from './data/questions';
@@ -54,7 +55,7 @@ const StatCard = ({ label, value, icon: Icon, color }: { label: string, value: s
       <Icon className="w-5 h-5 text-white" />
     </div>
     <div>
-      <p className="text-sm text-slate-500 font-medium">{label}</p>
+      <p className="text-sm text-stone-500 font-medium">{label}</p>
       <p className="text-xl font-bold text-ink">{value}</p>
     </div>
   </div>
@@ -63,9 +64,259 @@ const StatCard = ({ label, value, icon: Icon, color }: { label: string, value: s
 // --- Content Components ---
 
 export default function App() {
-  const [view, setView] = useState<'dashboard' | 'study' | 'quiz' | 'resources' | 'stats' | 'auth'>('dashboard');
-  const [theme, setTheme] = useState<'light' | 'dark'>(() => 'light'); // Force light mode for brightness
+  const [view, setView] = useState<'home' | 'dashboard' | 'study' | 'quiz' | 'resources' | 'stats' | 'auth' | 'community'>('home');
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => (localStorage.getItem('ace_exams_theme') as 'light' | 'dark') || 'light');
   const [aiModal, setAIModal] = useState<{ open: boolean, context: string }>({ open: false, context: '' });
+
+  // --- New Student Centered Componets ---
+
+  const LandingPage = () => (
+    <div className="min-h-screen bg-bg-light overflow-x-hidden">
+      {/* Navigation */}
+      <nav className="container mx-auto px-6 py-6 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-brand-primary rounded-xl flex items-center justify-center p-2 shadow-lg shadow-brand-primary/20">
+            <Sparkles className="w-full h-full text-white" />
+          </div>
+          <span className="text-2xl font-display font-extrabold text-ink tracking-tight">AceExams</span>
+        </div>
+        <div className="hidden md:flex items-center gap-8 font-semibold text-stone-600">
+          <a href="#features" className="hover:text-brand-primary transition-colors">Features</a>
+          <a href="#about" className="hover:text-brand-primary transition-colors">About</a>
+          <a href="#community" className="hover:text-brand-primary transition-colors">Community</a>
+        </div>
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={() => setView('auth')}
+            className="text-stone-600 font-bold hover:text-brand-primary"
+          >
+            Sign In
+          </button>
+          <button 
+            onClick={() => { setIsSignUp(true); setView('auth'); }}
+            className="btn-primary py-2 px-6"
+          >
+            Start Learning
+          </button>
+        </div>
+      </nav>
+
+      {/* Hero Section */}
+      <section className="container mx-auto px-6 pt-16 pb-24 grid lg:grid-cols-2 gap-16 items-center">
+        <motion.div 
+          initial={{ opacity: 0, x: -50 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.8 }}
+          className="space-y-8"
+        >
+          <div className="inline-flex items-center gap-3 px-4 py-2 bg-brand-primary/10 rounded-full border border-brand-primary/10">
+            <Bot className="w-4 h-4 text-brand-primary" />
+            <span className="text-sm font-bold text-brand-primary uppercase tracking-wider">AI-Powered Learning Support</span>
+          </div>
+          <h1 className="text-6xl md:text-7xl font-display font-extrabold leading-[1.1] text-ink">
+            Master Your Exams <span className="text-gradient">With Confidence</span> & Joy
+          </h1>
+          <p className="text-xl text-stone-500 leading-relaxed max-w-lg">
+            Join thousands of African students preparing for BECE, WASSCE, and modern digital skills. Learning has never felt this human.
+          </p>
+          <div className="flex flex-col sm:flex-row items-center gap-4">
+            <button 
+              onClick={() => { setIsSignUp(true); setView('auth'); }}
+              className="btn-primary w-full sm:w-auto px-10 py-5 text-lg"
+            >
+              Get Started for Free
+            </button>
+            <button 
+              onClick={() => setView('resources')}
+              className="btn-secondary w-full sm:w-auto px-10 py-5 text-lg flex items-center justify-center gap-2"
+            >
+              <BookOpen className="w-5 h-5" />
+              Practice Exams
+            </button>
+          </div>
+          <div className="flex items-center gap-6 pt-4">
+            <div className="flex -space-x-4">
+              {[1, 2, 3, 4].map(i => (
+                <div key={i} className="w-12 h-12 rounded-full border-4 border-bg-light overflow-hidden shadow-sm bg-stone-200">
+                  <img 
+                    src={`https://api.dicebear.com/7.x/avataaars/svg?seed=student${i}`} 
+                    alt="Student" 
+                    referrerPolicy="no-referrer"
+                  />
+                </div>
+              ))}
+            </div>
+            <p className="text-sm font-bold text-stone-400">
+              <span className="text-brand-primary">12k+</span> students are studying right now
+            </p>
+          </div>
+        </motion.div>
+        
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1, delay: 0.2 }}
+          className="relative"
+        >
+          <div className="relative z-10 w-full aspect-square rounded-[3rem] overflow-hidden shadow-2xl shadow-brand-primary/20 border-8 border-white">
+            <img 
+              src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=2070&auto=format&fit=crop" 
+              alt="Students smiling" 
+              className="w-full h-full object-cover"
+              referrerPolicy="no-referrer"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+            <div className="absolute bottom-8 left-8 right-8">
+              <div className="bg-white/90 backdrop-blur p-4 rounded-2xl flex items-center gap-4 border border-white/50">
+                <div className="w-12 h-12 rounded-xl bg-green-500 flex items-center justify-center text-white">
+                  <Zap className="w-6 h-6 fill-current" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-stone-400 uppercase tracking-widest">New Achievement</p>
+                  <p className="text-sm font-bold text-ink">Kwame just mastered Core Maths!</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          {/* Decorative blobs */}
+          <div className="absolute -top-10 -right-10 w-64 h-64 bg-brand-primary/10 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-brand-warm/10 rounded-full blur-3xl animate-pulse delay-700"></div>
+        </motion.div>
+      </section>
+
+      {/* Features Section */}
+      <section id="features" className="bg-white py-24">
+        <div className="container mx-auto px-6">
+          <div className="text-center max-w-2xl mx-auto mb-20 space-y-4">
+            <h2 className="text-4xl font-display font-extrabold text-ink">Built for the Real Student Experience</h2>
+            <p className="text-stone-500">Every feature is designed to make learning feel like a conversation with a mentor, not just another app.</p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-12">
+            {[
+              { 
+                title: "Practice Like a Pro", 
+                desc: "Thousands of past questions from BECE and WAEC exams with detailed explanations.",
+                icon: "📝",
+                color: "bg-blue-50"
+              },
+              { 
+                title: "Build True Confidence", 
+                desc: "Our mock exams recreate the real atmosphere to reduce pressure and anxiety.",
+                icon: "🛡️",
+                color: "bg-purple-50"
+              },
+              { 
+                title: "AI Study Buddy", 
+                desc: "Get instant help from our AI Tutor whenever you're stuck on a difficult topic.",
+                icon: "🤖",
+                color: "bg-amber-50"
+              },
+              { 
+                title: "Learn Digital Skills", 
+                desc: "Go beyond exams with lessons in Frontend Dev, Computer Science, and more.",
+                icon: "💻",
+                color: "bg-green-50"
+              },
+              { 
+                title: "Community Spirit", 
+                desc: "Compete friendly on leaderboards and study together with students across Africa.",
+                icon: "🤝",
+                color: "bg-rose-50"
+              },
+              { 
+                title: "See Your Growth", 
+                desc: "Detailed visual progress tracking so you know exactly where you stand.",
+                icon: "📈",
+                color: "bg-indigo-50"
+              }
+            ].map((f, i) => (
+              <motion.div 
+                key={i}
+                whileHover={{ y: -10 }}
+                className={`${f.color} p-10 rounded-[2.5rem] border border-stone-50 transition-all`}
+              >
+                <div className="text-5xl mb-6">{f.icon}</div>
+                <h3 className="text-xl font-bold text-ink mb-3">{f.title}</h3>
+                <p className="text-stone-500 leading-relaxed">{f.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Social Proof */}
+      <section className="py-24 bg-bg-light">
+        <div className="container mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-12">
+          <div className="max-w-md space-y-6">
+            <h2 className="text-3xl font-display font-extrabold text-ink leading-tight text-center md:text-left">
+              "It feels like I have a personal coach in my pocket."
+            </h2>
+            <div className="flex items-center justify-center md:justify-start gap-4">
+              <div className="w-12 h-12 rounded-full bg-brand-primary overflow-hidden">
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=ama" alt="User" referrerPolicy="no-referrer"/>
+              </div>
+              <div>
+                <p className="font-bold text-ink">Ama Serwaa</p>
+                <p className="text-sm text-stone-500">BECE Candiate, Accra</p>
+              </div>
+            </div>
+          </div>
+          <div className="flex flex-wrap justify-center gap-12 grayscale opacity-40">
+            <span className="text-2xl font-display font-black">GES OFFICIAL</span>
+            <span className="text-2xl font-display font-black">WAEC PREP</span>
+            <span className="text-2xl font-display font-black">BECE HUB</span>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="container mx-auto px-6 py-24">
+        <div className="bg-ink rounded-[4rem] p-12 md:p-24 text-center space-y-10 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-96 h-96 bg-brand-primary opacity-20 blur-[120px] -translate-y-1/2 translate-x-1/2"></div>
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            className="space-y-4 max-w-2xl mx-auto relative z-10"
+          >
+            <h2 className="text-4xl md:text-6xl font-display font-extrabold text-white">Your Future <span className="text-gradient">Starts Today</span></h2>
+            <p className="text-stone-400 text-lg">
+              Don't wait for exam day to be ready. Join AceExams and start building your future with confidence.
+            </p>
+          </motion.div>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 relative z-10">
+            <button 
+              onClick={() => { setIsSignUp(true); setView('auth'); }}
+              className="btn-primary px-12 py-5 text-lg"
+            >
+              Sign Up for Free
+            </button>
+            <button 
+              onClick={() => setView('resources')}
+              className="btn-secondary bg-transparent border-white/20 text-white hover:bg-white/5 px-12 py-5 text-lg leading-none"
+            >
+              View Courses
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="py-12 border-t border-stone-200">
+        <div className="container mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-8 text-stone-400 text-sm font-semibold">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-brand-primary" />
+            <span className="text-ink font-display font-bold text-lg">AceExams</span>
+          </div>
+          <div className="flex items-center gap-8">
+            <a href="#" className="hover:text-brand-primary transition-colors">Privacy</a>
+            <a href="#" className="hover:text-brand-primary transition-colors">Terms</a>
+            <a href="#" className="hover:text-brand-primary transition-colors">Contact</a>
+          </div>
+          <p>© 2026 AceExams. For African Students everywhere.</p>
+        </div>
+      </footer>
+    </div>
+  );
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [email, setEmail] = useState('');
@@ -84,12 +335,13 @@ export default function App() {
     const saved = localStorage.getItem('ace_exams_stats');
     if (saved) {
       const parsed = JSON.parse(saved);
-      // Ensure points and subjectStats exist for older local data
       return { 
         ...parsed, 
         points: parsed.points || 0,
         subjectStats: parsed.subjectStats || {},
-        subjectScores: parsed.subjectScores || {}
+        subjectScores: parsed.subjectScores || {},
+        badges: parsed.badges || [],
+        history: parsed.history || []
       };
     }
     return {
@@ -99,17 +351,11 @@ export default function App() {
       points: 0,
       lastActive: new Date().toISOString(),
       subjectScores: {},
-      subjectStats: {}
+      subjectStats: {},
+      badges: [],
+      history: []
     };
   });
-
-  const navItems = [
-    { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-    { id: 'study', icon: BookOpen, label: 'Flash Cards' },
-    { id: 'quiz', icon: Zap, label: 'Quizzes' },
-    { id: 'resources', icon: Book, label: 'Study Resources' },
-    { id: 'stats', icon: Trophy, label: 'Performance' },
-  ];
 
   useEffect(() => {
     const root = window.document.documentElement;
@@ -128,12 +374,10 @@ export default function App() {
       
       if (currentUser) {
         try {
-          // Fetch cloud stats
           const cloudStats = await getUserProgress(currentUser.uid);
           if (cloudStats) {
             setStats(cloudStats);
           } else {
-            // New user: sync whatever local progress they have (guest progress) to cloud
             await saveUserProgress(currentUser.uid, stats);
           }
         } catch (error) {
@@ -141,7 +385,6 @@ export default function App() {
           setAuthError("Failed to sync progress with cloud. You are working offline.");
         }
       } else {
-        // Logged out: Load guest stats from local storage or reset
         const saved = localStorage.getItem('ace_exams_stats');
         if (saved) {
           setStats(JSON.parse(saved));
@@ -153,7 +396,9 @@ export default function App() {
             points: 0,
             lastActive: new Date().toISOString(),
             subjectScores: {},
-            subjectStats: {}
+            subjectStats: {},
+            badges: [],
+            history: []
           });
         }
       }
@@ -179,8 +424,6 @@ export default function App() {
     });
   }, [filters]);
 
-  // --- Views ---
-
   const handleResetStats = async () => {
     const freshStats: UserStats = {
       totalAttempted: 0,
@@ -189,7 +432,9 @@ export default function App() {
       points: 0,
       lastActive: new Date().toISOString(),
       subjectScores: {},
-      subjectStats: {}
+      subjectStats: {},
+      badges: [],
+      history: []
     };
     
     setStats(freshStats);
@@ -199,426 +444,436 @@ export default function App() {
     }
   };
 
+  const handleLogout = async () => {
+    await logout();
+    setView('home');
+  };
+
+  const navItems = [
+    { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+    { id: 'resources', icon: Book, label: 'Courses' },
+    { id: 'study', icon: BookOpen, label: 'Flash Cards' },
+    { id: 'quiz', icon: Zap, label: 'Quizzes' },
+    { id: 'community', icon: MessageSquare, label: 'Community' },
+    { id: 'stats', icon: Trophy, label: 'Performance' },
+  ];
+
+  if (authLoading) return (
+    <div className="min-h-screen bg-bg-light flex items-center justify-center">
+      <Loader2 className="w-8 h-8 text-brand-primary animate-spin" />
+    </div>
+  );
+
+  if (view === 'home' && !user) return <LandingPage />;
+
   const renderDashboard = () => (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 text-ink">
-        <div className="flex items-center gap-4">
-          {user && (
-            <div className="w-16 h-16 rounded-2xl bg-surface border-2 border-brand-primary p-0.5 shadow-lg shadow-brand-primary/10 overflow-hidden shrink-0">
-               <img 
-                 src={user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}`} 
-                 alt="Profile" 
-                 className="w-full h-full object-cover rounded-[0.9rem]" 
-                 referrerPolicy="no-referrer"
-               />
+    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
+      {/* Header with Motivation */}
+      <header className="space-y-10">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="flex items-center gap-6">
+            <div className="relative">
+              <div className="w-20 h-20 rounded-3xl bg-brand-primary p-1 shadow-2xl shadow-brand-primary/30">
+                <img 
+                  src={user?.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.uid || 'guest'}`} 
+                  alt="Profile" 
+                  className="w-full h-full object-cover rounded-[1.4rem] bg-white" 
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+              <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-brand-accent rounded-xl flex items-center justify-center text-white border-4 border-bg-light shadow-lg">
+                <Star className="w-4 h-4 fill-current" />
+              </div>
             </div>
-          )}
-          <div>
-            <h2 className="text-3xl font-bold">
-              {user ? `Welcome, ${user.displayName?.split(' ')[0] || 'Learner'} 👋` : 'Welcome back, Student 👋'}
-            </h2>
-            <p className="text-slate-500 font-medium">
-              {stats.points > 0 ? `You've earned ${stats.points.toLocaleString()} XP. Keep going!` : 'Ready to start your mastery journey?'}
-            </p>
+            <div>
+              <h2 className="text-3xl md:text-4xl font-display font-extrabold text-ink">
+                Welcome back, <span className="text-gradient">{user?.displayName?.split(' ')[0] || 'Learner'}</span> ✨
+              </h2>
+              <div className="flex items-center gap-3 mt-1">
+                <span className="text-sm font-bold text-stone-400 flex items-center gap-1">
+                  <Zap className="w-4 h-4 text-brand-accent fill-current" />
+                  {stats.streak} Day Study Streak
+                </span>
+                <span className="w-1 h-1 bg-stone-300 rounded-full"></span>
+                <span className="text-sm font-bold text-stone-400">Master Level 4</span>
+              </div>
+            </div>
+          </div>
+          <div className="bg-surface p-4 rounded-3xl border border-slate-border flex items-center gap-6 shadow-sm">
+            <div className="text-center">
+              <p className="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-1">XP Points</p>
+              <p className="text-xl font-display font-black text-brand-primary">{stats.points.toLocaleString()}</p>
+            </div>
+            <div className="w-px h-10 bg-slate-border"></div>
+            <div className="text-center">
+              <p className="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-1">Rank</p>
+              <p className="text-xl font-display font-black text-brand-accent">Top 5%</p>
+            </div>
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="flex-1 sm:flex-none bg-amber-500/10 text-amber-600 px-5 py-2.5 rounded-2xl text-sm font-bold border border-amber-500/20 flex items-center justify-center gap-2 shadow-sm">
-            <Star className="w-4 h-4 fill-amber-500 text-amber-500" />
-            {stats.points.toLocaleString()} Points
+
+        {/* Motivation Card */}
+        <div className="bg-warm-gradient border border-brand-warm/10 p-8 rounded-[2.5rem] flex flex-col md:flex-row items-center gap-8 shadow-sm">
+          <div className="w-20 h-20 bg-brand-warm/20 rounded-full flex items-center justify-center text-4xl shadow-inner">
+            💡
           </div>
-          {user ? (
-            <button 
-              onClick={handleLogout}
-              className="px-5 py-2.5 rounded-2xl bg-surface border border-slate-border text-slate-500 font-bold text-sm hover:bg-rose-500/10 hover:text-rose-500 hover:border-rose-500/20 transition-all flex items-center gap-2"
-            >
-              <LogOut className="w-4 h-4" />
-              <span className="hidden md:inline">Sign Out</span>
-            </button>
-          ) : (
-            <button 
-              onClick={() => setView('auth')}
-              className="px-5 py-2.5 rounded-2xl bg-brand-primary text-white font-bold text-sm hover:bg-blue-600 shadow-lg shadow-brand-primary/20 transition-all"
-            >
-              Sign In
-            </button>
-          )}
+          <div className="flex-1 space-y-2 text-center md:text-left">
+            <h3 className="text-lg font-bold text-ink">Today's Focus: Master Modern Science</h3>
+            <p className="text-stone-500 italic">"Education is the most powerful weapon which you can use to change the world." — Nelson Mandela</p>
+          </div>
+          <button className="btn-accent px-8 py-4 whitespace-nowrap">Start Session</button>
         </div>
       </header>
 
-      {!user && (
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-6 rounded-3xl text-white flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl shadow-blue-200">
-          <div className="space-y-2">
-            <h3 className="text-xl font-bold">Cloud Syncing Disabled</h3>
-            <p className="text-blue-100 text-sm max-w-md">Login to save your progress, unlock achievements, and access your stats on any device.</p>
+      {/* Grid: Recommended & Stats */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 space-y-8">
+          <div className="flex items-center justify-between">
+            <h3 className="text-2xl font-display font-extrabold text-ink">Recommended for You</h3>
+            <button className="text-brand-primary font-bold text-sm hover:underline">View All</button>
           </div>
-          <button 
-            onClick={() => setView('auth')}
-            className="btn-primary bg-brand-primary text-white hover:bg-blue-600 w-full md:w-auto"
-          >
-            Login Now
-          </button>
+          <div className="grid sm:grid-cols-2 gap-6">
+            {[
+              { title: "Past Questions 2024", subject: "Mathematics", duration: "15 mins", color: "bg-blue-500" },
+              { title: "Photosynthesis Explained", subject: "Science", duration: "10 mins", color: "bg-emerald-500" },
+            ].map((course, idx) => (
+              <motion.div 
+                key={idx}
+                whileHover={{ scale: 1.02 }}
+                className="interactive-card flex flex-col justify-between"
+              >
+                <div className="space-y-4">
+                  <div className={`w-12 h-12 ${course.color} rounded-2xl flex items-center justify-center text-white p-2 shadow-lg`}>
+                    <BookOpen className="w-full h-full" />
+                  </div>
+                  <div>
+                    <h4 className="text-xl font-bold text-ink leading-tight">{course.title}</h4>
+                    <p className="text-stone-400 font-semibold text-sm">{course.subject}</p>
+                  </div>
+                </div>
+                <div className="pt-6 flex items-center justify-between border-t border-stone-50 mt-6">
+                  <span className="text-xs font-bold text-stone-500">{course.duration}</span>
+                  <button className="text-brand-primary font-black uppercase text-[10px] tracking-widest hover:translate-x-1 transition-transform flex items-center gap-1">
+                    Play Now <ChevronRight className="w-3 h-3" />
+                  </button>
+                </div>
+              </motion.div>
+            ))}
+          </div>
         </div>
-      )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="md:col-span-2 grid grid-cols-2 gap-4">
-          <div className="bg-surface p-6 rounded-2xl border border-slate-border flex items-center gap-4">
-            <div className="w-12 h-12 bg-rose-500/10 rounded-xl flex items-center justify-center text-rose-600 text-2xl font-bold">🃏</div>
-            <div>
-              <p className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Attempted</p>
-              <p className="text-xl font-bold text-ink">{stats.totalAttempted}</p>
+        {/* Side Progress */}
+        <div className="space-y-8">
+          <h3 className="text-2xl font-display font-extrabold text-ink">Your Progress</h3>
+          <div className="bg-surface rounded-[2.5rem] border border-slate-border p-8 shadow-sm space-y-8">
+            <div className="space-y-4">
+              <div className="flex justify-between items-end">
+                <p className="text-sm font-bold text-stone-500 uppercase tracking-widest">Mathematics</p>
+                <p className="text-lg font-display font-black text-ink">85%</p>
+              </div>
+              <div className="h-3 bg-bg-light rounded-full overflow-hidden">
+                <motion.div 
+                  initial={{ width: 0 }}
+                  animate={{ width: '85%' }}
+                  className="h-full bg-brand-primary rounded-full shadow-lg shadow-brand-primary/30"
+                />
+              </div>
+            </div>
+            <div className="space-y-4">
+              <div className="flex justify-between items-end">
+                <p className="text-sm font-bold text-stone-500 uppercase tracking-widest">General Science</p>
+                <p className="text-lg font-display font-black text-ink">62%</p>
+              </div>
+              <div className="h-3 bg-bg-light rounded-full overflow-hidden">
+                <motion.div 
+                  initial={{ width: 0 }}
+                  animate={{ width: '62%' }}
+                  className="h-full bg-brand-secondary rounded-full shadow-lg shadow-brand-secondary/30"
+                />
+              </div>
+            </div>
+            <div className="pt-4 text-center">
+              <p className="text-sm text-stone-500 leading-relaxed">
+                You're doing great! You mastered <span className="font-bold text-brand-primary">Algebra</span> this week.
+              </p>
             </div>
           </div>
-          <div className="bg-blue-600 p-6 rounded-2xl flex items-center gap-4 text-white shadow-lg">
-            <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-white text-2xl font-bold">🎯</div>
-            <div>
-              <p className="text-[10px] uppercase font-bold text-white/70 tracking-wider">Success Rate</p>
-              <p className="text-xl font-bold">{stats.totalAttempted > 0 ? `${Math.round((stats.totalCorrect / stats.totalAttempted) * 100)}%` : '0%'}</p>
-            </div>
-          </div>
-        </div>
-        <div className="md:col-span-2 bg-surface p-6 rounded-2xl border border-slate-border relative overflow-hidden group">
-          <div className="relative z-10">
-            <h3 className="text-sm font-bold uppercase tracking-widest text-brand-primary mb-1">PRO PREP</h3>
-            <p className="text-lg font-bold text-ink">Master 2025 Core Subjects</p>
-            <p className="text-xs text-slate-500 mt-1">Personalized study plan active.</p>
-          </div>
-          <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-brand-primary/10 rounded-full group-hover:scale-110 transition-transform duration-500 opacity-50"></div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        <section className="lg:col-span-4 space-y-6">
-          <div className="bg-surface p-6 rounded-2xl border border-slate-border shadow-sm">
-            <h3 className="text-sm font-bold uppercase tracking-widest text-slate-400 mb-4 text-center">Search Library</h3>
-            <div className="space-y-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <input 
-                  type="text" 
-                  placeholder="Keyword search..."
-                  className="w-full pl-9 pr-4 py-2.5 bg-bg-light border border-slate-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/10 transition-all font-medium text-ink"
-                  value={filters.search}
-                  onChange={(e) => setFilters(f => ({ ...f, search: e.target.value }))}
-                />
-              </div>
-              
-              <div className="grid grid-cols-2 gap-2">
-                <button 
-                  onClick={() => setFilters(f => ({ ...f, examType: 'BECE' }))}
-                  className={`py-2 rounded-lg text-xs font-bold transition-all ${filters.examType === 'BECE' ? 'bg-brand-primary text-white shadow-md' : 'bg-bg-light text-slate-500 border border-slate-border hover:bg-bg-light/80'}`}
-                >
-                  BECE
-                </button>
-                <button 
-                  onClick={() => setFilters(f => ({ ...f, examType: 'WASSCE' }))}
-                  className={`py-2 rounded-lg text-xs font-bold transition-all ${filters.examType === 'WASSCE' ? 'bg-brand-primary text-white shadow-md' : 'bg-bg-light text-slate-500 border border-slate-border hover:bg-bg-light/80'}`}
-                >
-                  WASSCE
-                </button>
-              </div>
-
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1 tracking-wider">Subject</label>
-                  <select 
-                    className="w-full p-2.5 bg-bg-light border border-slate-border rounded-xl text-sm font-medium focus:outline-none text-ink"
-                    value={filters.subjectType}
-                    onChange={(e) => setFilters(f => ({ ...f, subjectType: e.target.value as any }))}
-                  >
-                    <option value="">All Subjects</option>
-                    <option value="Core">Core</option>
-                    <option value="Elective">Elective</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1 tracking-wider">Exam Year</label>
-                  <select 
-                    className="w-full p-2.5 bg-bg-light border border-slate-border rounded-xl text-sm font-medium focus:outline-none text-ink"
-                    value={filters.year}
-                    onChange={(e) => setFilters(f => ({ ...f, year: e.target.value }))}
-                  >
-                    <option value="">All Years</option>
-                    {Array.from({ length: 16 }, (_, i) => 2025 - i).map(y => <option key={y} value={y}>{y}</option>)}
-                  </select>
-                </div>
-              </div>
-
-              {(filters.examType || filters.subjectType || filters.year || filters.search) && (
-                <button 
-                  onClick={() => setFilters({ search: '', examType: '', subjectType: '', year: '' })}
-                  className="w-full py-2 flex items-center justify-center gap-2 text-rose-500 font-bold text-xs uppercase hover:bg-rose-500/10 rounded-lg transition-colors border border-transparent hover:border-rose-500/20"
-                >
-                  <RotateCcw className="w-4 h-4" /> Reset Filters
-                </button>
-              )}
-            </div>
-          </div>
-
-          <div className="bg-surface p-6 rounded-2xl border border-slate-border shadow-sm">
-            <h3 className="text-sm font-bold uppercase tracking-widest text-slate-400 mb-4">Subject Mastery</h3>
-            <div className="space-y-5">
-              {[
-                { label: 'Mathematics', dbKey: 'Core Mathematics', color: 'bg-emerald-500' },
-                { label: 'Science', dbKey: 'Integrated Science', color: 'bg-blue-500' },
-                { label: 'English', dbKey: 'English Language', color: 'bg-amber-500' },
-                { label: 'Social Studies', dbKey: 'Social Studies', color: 'bg-rose-500' },
-              ].map(subj => {
-                const score = stats.subjectScores[subj.dbKey] || 0;
-                return (
-                  <button 
-                    key={subj.label} 
-                    onClick={() => setFilters(f => ({ ...f, search: subj.dbKey }))}
-                    className="w-full text-left space-y-1.5 group p-1 rounded-xl hover:bg-bg-light transition-all active:scale-[0.98]"
-                  >
-                    <div className="flex justify-between text-sm">
-                      <span className="font-bold text-ink group-hover:text-brand-primary transition-colors">{subj.label}</span>
-                      <span className="font-bold text-slate-400 italic">{score}%</span>
-                    </div>
-                    <div className="h-2.5 bg-bg-light rounded-full border border-slate-border overflow-hidden">
-                      <motion.div 
-                        initial={{ width: 0 }}
-                        animate={{ width: `${score}%` }}
-                        className={`h-full ${subj.color}`}
-                        transition={{ duration: 1, ease: "easeOut" }}
-                      />
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="bg-surface p-6 rounded-2xl border border-slate-border shadow-sm">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-bold uppercase tracking-widest text-slate-400">Electives</h3>
-              <Sparkles className="w-4 h-4 text-brand-primary" />
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              {[
-                'Economics', 'Government', 'Elective Maths', 'Biology', 'Chemistry', 'Physics'
-              ].map(subj => (
-                <button 
-                  key={subj}
-                  onClick={() => setFilters({ ...filters, search: subj, subjectType: 'Elective' })}
-                  className="px-3 py-2 bg-bg-light border border-slate-border rounded-xl text-[11px] font-bold text-slate-500 hover:bg-brand-primary hover:text-white transition-all text-center"
-                >
-                  {subj}
-                </button>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="lg:col-span-8 flex flex-col gap-6">
-          <div className="flex items-center justify-between px-2">
-            <h2 className="text-xl font-bold flex items-center gap-2 text-ink">
-              <Zap className="w-5 h-5 text-amber-500 fill-amber-500" />
-              Quick Practice
-            </h2>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <button 
-              onClick={() => setView('study')}
-              className="bg-surface p-8 rounded-[2rem] border-2 border-slate-border hover:border-brand-primary transition-all group relative overflow-hidden"
-            >
-              <div className="relative z-10 text-left">
-                <div className="w-14 h-14 bg-brand-primary/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <BookOpen className="w-7 h-7 text-brand-primary" />
-                </div>
-                <h3 className="text-2xl font-bold text-ink">Study Mode</h3>
-                <p className="text-slate-500 mt-2 font-medium">Flashcards with active recall</p>
-                <div className="mt-8 flex items-center gap-2 text-brand-primary font-bold uppercase text-xs">
-                  Start Sessions <ChevronRight className="w-4 h-4" />
-                </div>
-              </div>
-              <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                <div className="text-8xl font-black text-ink">ST</div>
-              </div>
-            </button>
-
-            <button 
-              onClick={() => setView('quiz')}
-              className="bg-brand-primary p-8 rounded-[2rem] text-white hover:shadow-2xl transition-all group relative overflow-hidden border border-white/10 dark:bg-slate-950"
-            >
-              <div className="relative z-10 text-left">
-                <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <Zap className="w-7 h-7 text-amber-400 fill-amber-400" />
-                </div>
-                <h3 className="text-2xl font-bold text-white">Quiz Arena</h3>
-                <p className="text-white/50 mt-2 font-medium">Timed competitive testing</p>
-                <div className="mt-8 flex items-center gap-2 text-amber-400 font-bold uppercase text-xs">
-                  Enter Arena <ChevronRight className="w-4 h-4" />
-                </div>
-              </div>
-              <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                <div className="text-8xl font-black text-white">QZ</div>
-              </div>
-            </button>
-          </div>
-
-          <div className="bg-surface p-6 rounded-2xl border border-slate-border">
-             <div className="flex items-center justify-between mb-6">
-               <h3 className="font-bold text-ink">Recent Questions</h3>
-               <button className="text-xs font-bold text-brand-primary hover:underline">View All</button>
-             </div>
-             <div className="space-y-3">
-              {filteredQuestions.slice(0, 3).map(q => (
-                <div key={q.id} className="p-4 bg-bg-light border border-slate-border rounded-xl flex items-center justify-between group hover:bg-surface hover:border-brand-primary/20 transition-all">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 bg-brand-primary/10 text-brand-primary rounded-md">{q.exam_type}</span>
-                      <span className="text-xs font-bold text-slate-500 uppercase tracking-tighter italic">#{q.year} • {q.subject}</span>
-                    </div>
-                    <p className="text-ink font-semibold line-clamp-1">{q.question}</p>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-brand-primary transition-colors" />
-                </div>
-              ))}
-             </div>
-          </div>
-        </section>
+      {/* Community Teaser */}
+      <div className="bg-stone-900 dark:bg-stone-800 rounded-[3rem] p-10 flex flex-col md:flex-row items-center gap-10 text-white relative overflow-hidden">
+        <div className="absolute top-0 right-0 p-12 opacity-10">
+          <MessageSquare className="w-48 h-48" />
+        </div>
+        <div className="space-y-4 relative z-10 text-center md:text-left">
+          <h3 className="text-3xl font-display font-black">Learn together, succeed together!</h3>
+          <p className="text-stone-400 max-w-md">Join the study group for tomorrow's WAEC Prep simulation. 240 students joined today.</p>
+        </div>
+        <button 
+          onClick={() => setView('community')}
+          className="btn-primary bg-white text-ink hover:bg-stone-100 dark:hover:bg-stone-200 relative z-10 px-10 py-5"
+        >
+          Join Study Group
+        </button>
       </div>
     </div>
   );
 
-  const renderStudy = () => <StudyMode onBack={() => setView('dashboard')} questions={filteredQuestions} onAskAI={(ctx) => setAIModal({ open: true, context: ctx })} onCardAction={(subject, isCorrect) => {
-    setStats(prev => {
-      const newSubjectStats = { ...prev.subjectStats };
-      const newSubjectScores = { ...prev.subjectScores };
-
-      const existing = newSubjectStats[subject] || { attempted: 0, correct: 0 };
-      const updated = {
-        attempted: existing.attempted + 1,
-        correct: existing.correct + (isCorrect ? 1 : 0)
-      };
-      
-      newSubjectStats[subject] = updated;
-      newSubjectScores[subject] = Math.round((updated.correct / updated.attempted) * 100);
-
-      return {
-        ...prev,
-        totalAttempted: prev.totalAttempted + 1,
-        totalCorrect: prev.totalCorrect + (isCorrect ? 1 : 0),
-        points: prev.points + (isCorrect ? 5 : 2), // Earn a bit of XP for studying
-        lastActive: new Date().toISOString(),
-        subjectStats: newSubjectStats,
-        subjectScores: newSubjectScores
-      };
-    });
-  }} />;
-  const renderQuiz = () => <QuizModeView onBack={() => setView('dashboard')} questions={filteredQuestions} onAskAI={(ctx) => setAIModal({ open: true, context: ctx })} onFinish={(correct, subjectSummary) => {
-    setStats(prev => {
-      const newSubjectStats = { ...prev.subjectStats };
-      const newSubjectScores = { ...prev.subjectScores };
-
-      Object.entries(subjectSummary).forEach(([subject, data]) => {
-        const existing = newSubjectStats[subject] || { attempted: 0, correct: 0 };
-        const updated = {
-          attempted: existing.attempted + data.attempted,
-          correct: existing.correct + data.correct
-        };
-        newSubjectStats[subject] = updated;
-        newSubjectScores[subject] = Math.round((updated.correct / updated.attempted) * 100);
-      });
-
-      return {
-        ...prev,
-        totalAttempted: prev.totalAttempted + filteredQuestions.length,
-        totalCorrect: prev.totalCorrect + correct,
-        points: prev.points + (correct * 10),
-        streak: prev.streak + 1, // Simple streak tracking
-        lastActive: new Date().toISOString(),
-        subjectStats: newSubjectStats,
-        subjectScores: newSubjectScores
-      };
-    });
-  }} />;
-
-  const renderResources = () => (
-    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
+  const renderCommunity = () => (
+    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-6 duration-700 pb-20">
       <header className="space-y-4">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-brand-primary/10 rounded-2xl flex items-center justify-center border border-brand-primary/20 shadow-sm">
-             <Book className="w-6 h-6 text-brand-primary" />
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold text-ink tracking-tight">Study Resources</h1>
-            <p className="text-slate-500 font-medium">Official BECE & WASSCE Syllabus Overview</p>
-          </div>
-        </div>
+        <h2 className="text-5xl font-display font-extrabold text-ink leading-tight">Student Community</h2>
+        <p className="text-stone-500 text-lg max-w-2xl">Connect with millions of students. Ask questions, share your growth, and find study partners for your exams.</p>
       </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {['Mathematics', 'Science', 'English', 'Social Studies'].map(category => {
-          const topics = SYLLABUS_DATA.filter(t => t.subject.includes(category));
-          const colorClass = category === 'Mathematics' ? 'bg-emerald-500' : 
-                            category === 'Science' ? 'bg-blue-500' :
-                            category === 'English' ? 'bg-amber-500' : 'bg-rose-500';
-          
-          return (
-            <div key={category} className="space-y-4">
-              <div className="flex items-center gap-2 px-1">
-                <div className={`w-2 h-2 rounded-full ${colorClass}`}></div>
-                <h3 className="text-sm font-black uppercase tracking-widest text-slate-400">{category}</h3>
+      <div className="grid lg:grid-cols-12 gap-8">
+        <div className="lg:col-span-8 space-y-6">
+          <div className="bg-surface p-8 rounded-[2.5rem] border border-slate-border flex items-center gap-4 shadow-sm">
+             <div className="w-14 h-14 rounded-2xl bg-bg-light flex items-center justify-center">
+                <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.uid}`} alt="User" className="w-10 h-10" />
+             </div>
+             <input 
+               type="text" 
+               placeholder="What's on your mind today?" 
+               className="flex-1 bg-bg-light py-4 px-8 rounded-3xl outline-none focus:ring-4 ring-brand-primary/10 transition-all font-medium text-ink"
+             />
+             <button className="btn-primary py-4 px-10">Share</button>
+          </div>
+
+          {[
+            { user: "Kwesi Appiah", role: "WASSCE Candidate", content: "Does anyone have a simplified explanation for the Nitrogen Cycle? The textbook definitions are a bit hard for me.", time: "2h ago", likes: 24, replies: 12, seed: "kwesi" },
+            { user: "Fatima Jallow", role: "Computer Science Student", content: "Just finished the React basics course! If anyone is starting out, let's form a study group for the final project. 🚀", time: "5h ago", likes: 45, replies: 8, seed: "fatima" },
+          ].map((post, idx) => (
+            <motion.div 
+              key={idx}
+              className="bg-surface p-10 rounded-[3rem] border border-slate-border space-y-6 shadow-sm hover:border-brand-primary/10 transition-colors"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-2xl border border-slate-border overflow-hidden shrink-0 bg-bg-light">
+                  <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${post.seed}`} alt="User" />
+                </div>
+                <div>
+                  <p className="font-display font-black text-ink">{post.user}</p>
+                  <p className="text-[10px] font-black text-brand-primary uppercase tracking-[0.2em]">{post.role}</p>
+                </div>
+                <span className="ml-auto text-xs font-bold text-stone-300">{post.time}</span>
               </div>
-              <div className="space-y-4">
-                {topics.map(topic => (
-                  <div key={topic.id} className="bg-surface p-6 rounded-3xl border border-slate-border shadow-sm hover:shadow-md transition-shadow group">
-                    <h4 className="font-bold text-ink text-lg mb-2">{topic.title}</h4>
-                    <p className="text-sm text-slate-500 leading-relaxed mb-4">{topic.description}</p>
-                    <div className="flex flex-wrap gap-2">
-                      {topic.subtopics.map(sub => (
-                        <span key={sub} className="text-[10px] font-bold px-2 py-1 bg-bg-light text-slate-500 rounded-lg group-hover:bg-brand-primary/10 group-hover:text-brand-primary transition-colors">{sub}</span>
-                      ))}
+              <p className="text-stone-600 dark:text-stone-300 leading-relaxed text-xl font-medium">{post.content}</p>
+              <div className="flex items-center gap-8 pt-6 border-t border-slate-border">
+                <button className="flex items-center gap-2 text-stone-400 hover:text-brand-primary font-bold transition-colors">
+                  <Heart className="w-5 h-5" /> {post.likes}
+                </button>
+                <button className="flex items-center gap-2 text-stone-400 hover:text-brand-secondary font-bold transition-colors">
+                  <MessageSquare className="w-5 h-5" /> {post.replies}
+                </button>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        <div className="lg:col-span-4 space-y-8">
+           <div className="bg-ink rounded-[2.5rem] p-10 text-white space-y-8 relative overflow-hidden">
+              <Bot className="absolute -right-10 -top-10 w-40 h-40 opacity-5" />
+              <h3 className="text-2xl font-display font-black relative z-10">Top Mentors</h3>
+              <div className="space-y-6 relative z-10">
+                {[
+                  { name: "Dr. Ben", subject: "Mathematics Expert", xp: "15.2k", seed: "ben" },
+                  { name: "Sarah A.", subject: "Science Guru", xp: "12.8k", seed: "sarah" },
+                  { name: "Musa T.", subject: "Code Wizard", xp: "10.1k", seed: "musa" },
+                ].map((m, i) => (
+                  <div key={i} className="flex items-center gap-4 group cursor-pointer">
+                    <div className="w-12 h-12 rounded-2xl border border-white/10 overflow-hidden flex-shrink-0 group-hover:scale-110 transition-transform">
+                      <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${m.seed}`} alt="Mentor" />
                     </div>
+                    <div>
+                      <p className="font-display font-black text-white text-sm">{m.name}</p>
+                      <p className="text-[10px] text-white/40 uppercase font-black tracking-widest">{m.subject}</p>
+                    </div>
+                    <div className="ml-auto text-brand-primary font-black text-xs">{m.xp}</div>
                   </div>
                 ))}
               </div>
-            </div>
-          );
-        })}
-      </div>
-
-      <div className="bg-brand-primary/5 dark:bg-slate-900 rounded-[2.5rem] p-10 text-ink dark:text-white relative overflow-hidden border border-brand-primary/10">
-        <div className="absolute top-0 right-0 p-12 opacity-5">
-          <Bot className="w-48 h-48" />
-        </div>
-        <div className="relative z-10 max-w-2xl">
-          <h2 className="text-4xl font-display leading-tight mb-6 italic">Stuck on a topic? Your GH AI Tutor is here to help.</h2>
-          <p className="text-slate-500 dark:text-white/60 text-lg mb-8">Get instant explanations customized for the Ghanaian curriculum using the power of Gemini AI.</p>
-          <button 
-            onClick={() => setAIModal({ open: true, context: 'General Syllabus Inquiry' })}
-            className="px-8 py-4 bg-brand-primary text-white rounded-2xl font-bold text-lg hover:bg-blue-600 transition-all flex items-center gap-3 shadow-xl"
-          >
-            <Sparkles className="w-6 h-6 text-white" />
-            Talk to AI Tutor
-          </button>
+              <button className="w-full bg-white/5 border border-white/10 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-white text-white hover:text-ink transition-all">Become a Mentor</button>
+           </div>
         </div>
       </div>
     </div>
   );
 
-  const handleLogout = async () => {
-    try {
-      await logout();
-      localStorage.removeItem('ace_exams_stats');
-      setStats({
-        totalAttempted: 0,
-        totalCorrect: 0,
-        streak: 0,
-        points: 0,
-        lastActive: new Date().toISOString(),
-        subjectScores: {},
-        subjectStats: {}
-      });
-      setView('dashboard');
-    } catch (error) {
-      console.error("Logout failed:", error);
-    }
-  };
+  const renderStudy = () => (
+    <StudyMode 
+      onBack={() => setView('dashboard')} 
+      questions={filteredQuestions} 
+      onAskAI={(ctx) => setAIModal({ open: true, context: ctx })} 
+      onCardAction={(subject, isCorrect) => {
+        setStats(prev => {
+          const newSubjectStats = { ...prev.subjectStats };
+          const newSubjectScores = { ...prev.subjectScores };
+
+          const existing = newSubjectStats[subject] || { attempted: 0, correct: 0 };
+          const updated = {
+            attempted: existing.attempted + 1,
+            correct: existing.correct + (isCorrect ? 1 : 0)
+          };
+          
+          newSubjectStats[subject] = updated;
+          newSubjectScores[subject] = Math.round((updated.correct / updated.attempted) * 100);
+
+          return {
+            ...prev,
+            totalAttempted: prev.totalAttempted + 1,
+            totalCorrect: prev.totalCorrect + (isCorrect ? 1 : 0),
+            points: prev.points + (isCorrect ? 15 : 5), 
+            lastActive: new Date().toISOString(),
+            subjectStats: newSubjectStats,
+            subjectScores: newSubjectScores
+          };
+        });
+      }} 
+    />
+  );
+
+  const renderQuiz = () => (
+    <QuizModeView 
+      onBack={() => setView('dashboard')} 
+      questions={filteredQuestions} 
+      onAskAI={(ctx) => setAIModal({ open: true, context: ctx })} 
+      onFinish={(correct, subjectSummary, xpEarned, timeSpent) => {
+        setStats(prev => {
+          const newSubjectStats = { ...prev.subjectStats };
+          const newSubjectScores = { ...prev.subjectScores };
+          const newHistory = [...(prev.history || [])];
+
+          Object.entries(subjectSummary).forEach(([subject, data]) => {
+            const existing = newSubjectStats[subject] || { attempted: 0, correct: 0 };
+            const updated = {
+              attempted: existing.attempted + data.attempted,
+              correct: existing.correct + data.correct
+            };
+            newSubjectStats[subject] = updated;
+            newSubjectScores[subject] = Math.round((updated.correct / updated.attempted) * 100);
+          });
+
+          // Add to history
+          newHistory.unshift({
+            id: Date.now().toString(),
+            date: new Date().toISOString(),
+            subject: 'Mixed Quiz',
+            score: correct,
+            total: Object.values(subjectSummary).reduce((acc, curr) => acc + curr.attempted, 0),
+            xpEarned: xpEarned,
+            duration: timeSpent
+          });
+
+          // Limit history to last 20
+          if (newHistory.length > 20) newHistory.pop();
+
+          // Badge logic
+          const newBadges = [...(prev.badges || [])];
+          const hasBadge = (id: string) => newBadges.some(b => b.id === id);
+
+          if (!hasBadge('first_quiz')) {
+            newBadges.push({ id: 'first_quiz', name: 'Quiz Veteran', description: 'Completed your first quiz session!', icon: '🏆', earnedAt: new Date().toISOString() });
+          }
+          if (correct >= 50 && !hasBadge('50_master')) {
+            newBadges.push({ id: '50_master', name: 'Exam Master', description: 'Correctly answered 50 questions in one session.', icon: '👑', earnedAt: new Date().toISOString() });
+          }
+
+          return {
+            ...prev,
+            totalAttempted: prev.totalAttempted + Object.values(subjectSummary).reduce((acc, curr) => acc + curr.attempted, 0),
+            totalCorrect: prev.totalCorrect + correct,
+            points: prev.points + xpEarned,
+            streak: prev.streak + 1,
+            lastActive: new Date().toISOString(),
+            subjectStats: newSubjectStats,
+            subjectScores: newSubjectScores,
+            history: newHistory,
+            badges: newBadges
+          };
+        });
+      }} 
+    />
+  );
+
+  const renderResources = () => (
+    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-700 pb-20">
+      <header className="space-y-4">
+        <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-50 rounded-full text-emerald-600 font-bold text-xs uppercase tracking-widest border border-emerald-100">
+          <Book className="w-3 h-3" />
+          Verified Learning Path
+        </div>
+        <h2 className="text-5xl font-display font-extrabold text-ink leading-tight">Your Course Library</h2>
+        <p className="text-stone-500 text-lg max-w-2xl">Find everything you need to succeed, organized by experts. Practical, relatable, and easy to follow.</p>
+      </header>
+
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {SYLLABUS_DATA.map((subject, idx) => (
+          <motion.div 
+            key={idx}
+            whileHover={{ y: -8 }}
+            className="group relative"
+          >
+            <div className="absolute inset-0 bg-brand-primary/5 rounded-[2.5rem] blur-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+          <div className="bg-surface p-8 rounded-[2.5rem] border border-slate-border shadow-sm space-y-6 hover:border-brand-primary/20 transition-all">
+            <div className="flex items-center justify-between">
+              <div className="w-14 h-14 bg-bg-light rounded-2xl flex items-center justify-center text-3xl group-hover:bg-brand-primary group-hover:text-white transition-colors duration-500">
+                {subject.subject.toLowerCase().includes('math') ? '🧮' : subject.subject.toLowerCase().includes('science') ? '🧬' : '🌍'}
+              </div>
+              <div className="flex -space-x-2">
+                 {[1, 2, 3].map(i => (
+                   <div key={i} className="w-8 h-8 rounded-full border-2 border-surface bg-bg-light overflow-hidden shadow-sm">
+                      <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=resource${i}${idx}`} alt="Mentor" referrerPolicy="no-referrer" />
+                   </div>
+                 ))}
+              </div>
+            </div>
+              
+              <div>
+                <h3 className="text-2xl font-display font-black text-ink mb-2">{subject.title}</h3>
+                <p className="text-stone-400 font-bold text-xs uppercase tracking-[0.2em]">{subject.subtopics.length} Lessons Available</p>
+              </div>
+
+              <div className="space-y-3">
+                {subject.subtopics.slice(0, 3).map((topic, tidx) => (
+                  <div key={tidx} className="flex items-center gap-3 text-stone-500 font-medium">
+                    <div className="w-1.5 h-1.5 bg-brand-primary rounded-full"></div>
+                    {topic}
+                  </div>
+                ))}
+              </div>
+
+              <button 
+                onClick={() => {
+                  setFilters(f => ({ ...f, search: subject.subject }));
+                  setView('dashboard');
+                }}
+                className="w-full btn-primary py-4 rounded-2xl flex items-center justify-center gap-2 group-hover:bg-ink group-hover:ring-4 group-hover:ring-brand-primary/10 transition-all"
+              >
+                Study Course
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
+      <div className="bg-brand-primary rounded-[3rem] p-12 text-white flex flex-col md:flex-row items-center gap-12 relative overflow-hidden">
+        <Bot className="absolute -left-10 -bottom-10 w-48 h-48 opacity-10" />
+        <div className="space-y-4 relative z-10 max-w-xl text-center md:text-left">
+           <h3 className="text-3xl font-display font-black">Missing something? Ask your Mentor.</h3>
+           <p className="text-white/80 font-medium leading-relaxed">Our AI Mentor has access to the full GES and WAEC archives. Ask anything about science, maths, or computer studies!</p>
+        </div>
+        <button 
+          onClick={() => setAIModal({ open: true, context: 'Help me find a learning topic.' })}
+          className="bg-white text-brand-primary px-12 py-5 rounded-[2rem] font-black uppercase text-xs tracking-widest hover:scale-105 active:scale-95 transition-all shadow-2xl relative z-10 shadow-brand-primary/40 whitespace-nowrap"
+        >
+          Open AI Chat
+        </button>
+      </div>
+    </div>
+  );
 
   const handleAuthSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -633,7 +888,9 @@ export default function App() {
           points: 0,
           lastActive: new Date().toISOString(),
           subjectScores: {},
-          subjectStats: {}
+          subjectStats: {},
+          badges: [],
+          history: []
         };
         await saveUserProgress(newUser.uid, freshStats);
         setStats(freshStats);
@@ -767,105 +1024,106 @@ export default function App() {
 
   if (authLoading) return (
     <div className="min-h-screen bg-bg-light flex items-center justify-center">
-      <div className="w-12 h-12 border-4 border-brand-primary border-t-transparent rounded-full animate-spin"></div>
+      <Loader2 className="w-8 h-8 text-brand-primary animate-spin" />
     </div>
   );
 
+  if (authLoading) return (
+    <div className="min-h-screen bg-bg-light flex items-center justify-center text-brand-primary">
+      <Loader2 className="w-10 h-10 animate-spin" />
+    </div>
+  );
+
+  if (view === 'home' && !user) return <LandingPage />;
+
   return (
     <div className="min-h-screen bg-bg-light flex overflow-hidden">
-      {/* Sidebar Rail (Desktop) */}
-      <aside className="fixed left-0 top-0 bottom-0 w-64 bg-surface border-r border-slate-border hidden md:flex flex-col z-40 transform transition-transform duration-300">
-        <div className="p-8 flex flex-col gap-6">
+      {/* --- Desktop Sidebar --- */}
+      <aside className="hidden md:flex w-72 bg-surface border-r border-slate-border flex-col py-10 px-6 gap-10 shrink-0">
+        <div className="flex items-center justify-between px-2">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-brand-primary rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg ring-1 ring-blue-400/20">A</div>
-            <h1 className="text-2xl font-extrabold tracking-tight text-ink">AceExams<span className="text-brand-primary">.gh</span></h1>
+            <div className="w-10 h-10 bg-brand-primary rounded-2xl flex items-center justify-center p-2 shadow-lg shadow-brand-primary/20">
+              <Sparkles className="w-full h-full text-white" />
+            </div>
+            <span className="text-2xl font-display font-extrabold text-ink tracking-tight">AceExams</span>
           </div>
-
-          <button
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            className="flex items-center gap-3 p-3 rounded-2xl bg-bg-light border border-slate-border text-slate-500 hover:text-brand-primary transition-all font-bold text-sm"
+          <button 
+            onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+            className="w-10 h-10 rounded-xl bg-bg-light flex items-center justify-center text-stone-400 hover:text-brand-primary transition-all border border-slate-border hover:shadow-lg"
           >
-            {theme === 'dark' ? <Sun className="w-5 h-5 text-amber-500" /> : <Moon className="w-5 h-5 text-indigo-500" />}
-            {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+            {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
           </button>
         </div>
-        
-        <nav className="flex-1 px-4 space-y-1 pt-4">
-          {navItems.map(({ id, icon: Icon, label }) => (
+
+        <nav className="flex-1 space-y-2">
+          {navItems.map((item) => (
             <button
-              key={id}
-              onClick={() => setView(id as any)}
-              className={`w-full nav-item ${view === id ? 'nav-item-active' : ''}`}
+              key={item.id}
+              onClick={() => setView(item.id as any)}
+              className={`w-full group ${view === item.id ? 'nav-item-active' : 'nav-item'}`}
             >
-              <Icon className="w-5 h-5" />
-              {label}
+              <item.icon className={`w-5 h-5 ${view === item.id ? 'text-brand-primary' : 'text-stone-400 group-hover:text-brand-primary'}`} />
+              <span className="flex-1 text-left">{item.label}</span>
             </button>
           ))}
-          
-          <div className="pt-6 mt-6 border-t border-slate-border px-2">
-            <p className="text-[10px] uppercase font-bold text-slate-400 tracking-widest mb-4 ml-2">Account</p>
-            {user ? (
-              <div className="space-y-2">
-                <div className="flex items-center gap-3 p-3 bg-bg-light rounded-2xl border border-slate-border">
-                  <div className="w-10 h-10 rounded-xl bg-brand-primary/10 flex items-center justify-center overflow-hidden">
-                    {user.photoURL ? (
-                      <img src={user.photoURL} alt="User" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                    ) : (
-                      <UserIcon className="w-5 h-5 text-brand-primary" />
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-ink truncate">{user.displayName || 'Learner'}</p>
-                    <p className="text-[10px] text-slate-500 truncate">{user.email}</p>
-                  </div>
-                </div>
-                <button 
-                  onClick={handleLogout}
-                  className="w-full flex items-center gap-3 p-3 text-slate-500 hover:text-rose-600 hover:bg-rose-500/10 rounded-2xl transition-all font-bold text-sm"
-                >
-                  <LogOut className="w-5 h-5" />
-                  Sign Out
-                </button>
-              </div>
-            ) : (
-              <button 
-                onClick={() => setView('auth')}
-                className={`w-full flex items-center gap-3 p-3 rounded-2xl transition-all font-bold text-sm ${view === 'auth' ? 'bg-brand-primary text-white shadow-lg' : 'text-slate-500 hover:bg-brand-primary/5 hover:text-brand-primary'}`}
-              >
-                <LogIn className="w-5 h-5" />
-                Sign In / Join
-              </button>
-            )}
-          </div>
         </nav>
 
-        <div className="p-6 border-t border-slate-border m-4 rounded-2xl bg-bg-light/50">
-          <p className="text-[10px] uppercase font-extrabold text-slate-500 tracking-widest mb-3 text-center">Today's Streak</p>
-          <div className="flex gap-1.5 mb-3">
-            {Array.from({ length: 7 }).map((_, i) => (
-              <div 
-                key={i} 
-                className={`h-1.5 flex-1 rounded-full ${i < stats.streak ? 'bg-brand-primary' : 'bg-slate-border'}`} 
-              />
-            ))}
+        <div className="space-y-4">
+          <div className="bg-warm-gradient p-6 rounded-3xl border border-brand-warm/10 relative overflow-hidden">
+            <Bot className="absolute -right-4 -bottom-4 w-16 h-16 text-brand-warm/20" />
+            <p className="text-xs font-bold text-brand-warm uppercase tracking-widest mb-1">Mentor Tip</p>
+            <p className="text-xs text-stone-600 font-medium leading-relaxed">Try the Science flashcards for 5 mins today to maintain your streak!</p>
           </div>
-          <p className="text-xs font-bold text-brand-primary flex items-center gap-1.5">
-            <Zap className="w-3 h-3 fill-brand-primary" />
-            {stats.streak} Day Streak!
-          </p>
+          
+          <button 
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-5 py-3 text-stone-400 hover:text-rose-500 font-bold transition-colors"
+          >
+            <LogOut className="w-5 h-5" />
+            Sign Out
+          </button>
         </div>
       </aside>
 
-      {/* Main Content View */}
-      <main className="flex-1 flex flex-col md:ml-64 relative min-h-screen">
-        <div className="flex-1 p-4 md:p-8 max-w-6xl mx-auto w-full pb-28 md:pb-8">
+      {/* --- Main Content Area --- */}
+      <main className="flex-1 flex flex-col relative h-screen overflow-y-auto no-scrollbar pb-24 md:pb-0">
+        {/* Mobile Nav Top Bar */}
+        <div className="md:hidden flex items-center justify-between p-6 bg-surface border-b border-slate-border sticky top-0 z-40">
+           <div className="flex items-center gap-2">
+             <div className="w-10 h-10 bg-brand-primary rounded-xl flex items-center justify-center p-2">
+               <Sparkles className="w-full h-full text-white" />
+             </div>
+             <span className="font-display font-black text-2xl text-ink">AceExams</span>
+           </div>
+           <div className="flex items-center gap-4">
+             <button 
+                onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+                className="w-10 h-10 rounded-xl bg-bg-light flex items-center justify-center text-stone-400"
+              >
+                {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+              </button>
+             <div 
+               className="w-10 h-10 rounded-xl overflow-hidden border border-slate-border"
+               onClick={() => setView('auth')}
+             >
+                <img 
+                  src={user?.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.uid || 'guest'}`} 
+                  alt="Profile" 
+                  className="w-full h-full object-cover" 
+                  referrerPolicy="no-referrer"
+                />
+             </div>
+           </div>
+        </div>
+
+        <div className="flex-1 p-6 md:p-12 max-w-7xl mx-auto w-full">
           <AnimatePresence mode="wait">
             <motion.div
               key={view}
-              initial={{ opacity: 0, x: 10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -10 }}
-              transition={{ duration: 0.3, ease: 'easeOut' }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
             >
               {view === 'dashboard' && renderDashboard()}
               {view === 'study' && renderStudy()}
@@ -873,61 +1131,50 @@ export default function App() {
               {view === 'resources' && renderResources()}
               {view === 'stats' && <StatsView user={user} stats={stats} onBack={() => setView('dashboard')} onReset={handleResetStats} />}
               {view === 'auth' && renderAuth()}
+              {view === 'community' && renderCommunity()}
             </motion.div>
           </AnimatePresence>
         </div>
 
-        {/* Mobile Nav (Floating Bar) */}
-        <nav className="md:hidden fixed bottom-6 left-6 right-6 bg-surface/90 backdrop-blur-2xl border border-slate-border shadow-[0_20px_50px_rgba(0,0,0,0.3)] rounded-[2rem] p-2 flex items-center justify-around z-50">
-          {navItems.map(({ id, icon: Icon }) => (
-            <button
-              key={id}
-              onClick={() => setView(id as any)}
-              className={`p-4 rounded-3xl transition-all ${view === id ? 'bg-brand-primary text-white shadow-xl shadow-brand-primary/30 scale-110' : 'text-slate-500 hover:bg-bg-light'}`}
-            >
-              <Icon className="w-5 h-5 flex-shrink-0" />
-            </button>
-          ))}
-          <button
-             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-             className="p-4 rounded-3xl transition-all text-slate-500 hover:bg-bg-light"
-          >
-            {theme === 'dark' ? <Sun className="w-5 h-5 text-amber-500" /> : <Moon className="w-5 h-5 text-indigo-500" />}
-          </button>
-          <button
-            onClick={() => setView('auth')}
-            className={`p-4 rounded-3xl transition-all ${view === 'auth' ? 'bg-brand-primary text-white shadow-xl shadow-brand-primary/30 scale-110' : 'text-slate-400 hover:bg-bg-light'}`}
-          >
-            {user ? (
-              <div className="w-5 h-5 rounded-full overflow-hidden border border-current">
-                <img src={user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}`} alt="User" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-              </div>
-            ) : (
-              <UserIcon className="w-5 h-5 flex-shrink-0" />
-            )}
-          </button>
-        </nav>
+        {/* Mobile Bottom Nav */}
+        <div className="md:hidden fixed bottom-6 left-6 right-6 bg-stone-900 dark:bg-stone-800 shadow-2xl shadow-stone-900/40 rounded-[2.5rem] p-3 flex items-center justify-around z-50">
+           {[
+             { id: 'dashboard', icon: LayoutDashboard },
+             { id: 'resources', icon: Book },
+             { id: 'quiz', icon: Zap },
+             { id: 'community', icon: MessageSquare },
+           ].map(item => (
+             <button 
+               key={item.id} 
+               onClick={() => setView(item.id as any)}
+               className={`p-4 rounded-3xl transition-all ${view === item.id ? 'bg-brand-primary text-white scale-110 shadow-lg' : 'text-stone-400 hover:bg-white/5'}`}
+             >
+               <item.icon className="w-6 h-6" />
+             </button>
+           ))}
+        </div>
       </main>
 
+      {/* --- Persistent AI Tutor Button --- */}
+      <motion.button
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
+        onClick={() => setAIModal({ open: true, context: 'General Support' })}
+        className="fixed bottom-32 md:bottom-12 right-6 md:right-12 w-20 h-20 bg-brand-primary text-white rounded-3xl shadow-2xl shadow-brand-primary/40 flex items-center justify-center z-50 group border-4 border-white dark:border-stone-800"
+      >
+        <Bot className="w-10 h-10 group-hover:hidden" />
+        <Sparkles className="w-10 h-10 hidden group-hover:block animate-pulse" />
+        <div className="absolute right-full mr-6 px-5 py-3 bg-stone-900 text-white text-sm font-bold rounded-2xl opacity-0 group-hover:opacity-100 transition-all scale-90 group-hover:scale-100 whitespace-nowrap pointer-events-none shadow-2xl">
+           Stuck? Ask your AI Tutor! ✨
+        </div>
+      </motion.button>
+
+      {/* Modals */}
       <AITutorModal 
         isOpen={aiModal.open} 
         onClose={() => setAIModal({ ...aiModal, open: false })} 
         initialContext={aiModal.context} 
       />
-
-      {/* Floating AI Action Button (Desktop only, or corner) */}
-      <motion.button
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
-        onClick={() => setAIModal({ open: true, context: 'General support and study help.' })}
-        className="fixed right-6 bottom-32 md:bottom-8 z-40 w-14 h-14 bg-brand-primary text-white rounded-2xl shadow-2xl flex items-center justify-center group"
-      >
-        <Bot className="w-7 h-7 group-hover:hidden" />
-        <Sparkles className="w-7 h-7 hidden group-hover:block animate-pulse" />
-        <div className="absolute right-full mr-4 px-3 py-1.5 bg-brand-primary text-white text-[10px] font-bold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none uppercase tracking-widest">
-          AI Tutor Help
-        </div>
-      </motion.button>
     </div>
   );
 }
@@ -961,136 +1208,136 @@ function StudyMode({
       setIndex(i => i + 1);
       setFlipped(false);
     } else {
-      onBack(); // End session if it's the last card
+      onBack();
     }
   };
 
   if (!current) return (
-    <div className="flex flex-col items-center justify-center py-20 text-center space-y-4">
-      <div className="w-16 h-16 bg-bg-light rounded-full flex items-center justify-center text-slate-400">
-        <BookOpen className="w-8 h-8" />
+    <div className="flex flex-col items-center justify-center py-20 text-center space-y-6">
+      <div className="w-20 h-20 bg-stone-50 rounded-full flex items-center justify-center text-stone-300">
+        <BookOpen className="w-10 h-10" />
       </div>
-      <p className="text-slate-500 font-medium">No questions found. Try adjusting filters.</p>
-      <button onClick={onBack} className="btn-secondary">Go Back</button>
+      <p className="text-xl font-bold text-stone-500">No questions found. Try adjusting filters.</p>
+      <button onClick={onBack} className="btn-secondary px-8">Go Back</button>
     </div>
   );
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
+    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-700 max-w-4xl mx-auto">
       <div className="flex items-center justify-between">
-        <button onClick={onBack} className="btn-secondary px-4 py-2 flex items-center gap-2">
-          <X className="w-4 h-4" /> Exit Session
+        <button onClick={onBack} className="group flex items-center gap-3 text-stone-400 hover:text-ink font-bold transition-all">
+          <div className="w-10 h-10 rounded-xl bg-stone-100 flex items-center justify-center group-hover:bg-stone-200">
+            <X className="w-5 h-5" />
+          </div>
+          Exit Session
         </button>
-        <span className="font-mono text-lg font-bold text-slate-400">Card {index + 1} of {questions.length}</span>
+        <div className="bg-white px-6 py-2 rounded-full border border-stone-100 font-display font-black text-ink shadow-sm">
+           {index + 1} <span className="text-stone-300 mx-2">/</span> {questions.length}
+        </div>
       </div>
 
-      <div 
-        className={`flip-card max-w-2xl mx-auto cursor-pointer ${flipped ? 'flipped' : ''}`}
-        onClick={() => setFlipped(!flipped)}
-      >
-        <div className="flip-card-inner">
-          <div className="flip-card-front bg-surface border border-slate-border">
-            <div className="absolute top-6 left-8 flex items-center gap-2">
-              <span className="w-2 h-2 bg-brand-primary rounded-full animate-pulse"></span>
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{current.subject}</span>
-            </div>
-            <div className="absolute top-6 right-8 text-slate-300 font-mono text-xl italic drop-shadow-sm leading-none">#{current.year}</div>
-            
-            <div className="px-6 space-y-6">
-              {current.passage && (
-                <div className="bg-bg-light p-6 rounded-2xl border border-slate-border text-sm italic text-slate-500 leading-relaxed text-left max-h-40 overflow-y-auto mb-4">
-                  {current.passage}
+      <div className="relative group perspective-1000">
+        <div 
+          className={`flip-card w-full h-[450px] cursor-pointer ${flipped ? 'flipped' : ''}`}
+          onClick={() => setFlipped(!flipped)}
+        >
+          <div className="flip-card-inner">
+            {/* Front */}
+            <div className="flip-card-front bg-surface border border-slate-border shadow-2xl rounded-[3rem] p-12 flex flex-col justify-between overflow-hidden">
+              <div className="absolute top-0 left-0 w-32 h-32 bg-brand-primary/5 rounded-br-[100%]"></div>
+              <div className="relative z-10 flex items-center justify-between">
+                <span className="text-xs font-black text-brand-primary uppercase tracking-[0.2em]">{current.subject}</span>
+                <span className="text-2xl font-display font-black text-stone-300 dark:text-stone-700 italic">#{current.year}</span>
+              </div>
+              
+              <div className="relative z-10 space-y-6">
+                {current.passage && (
+                  <div className="bg-bg-light p-6 rounded-2xl border border-slate-border text-sm italic text-stone-500 leading-relaxed text-left max-h-32 overflow-y-auto">
+                    {current.passage}
+                  </div>
+                )}
+                <h2 className="text-4xl md:text-5xl font-display font-extrabold leading-[1.1] text-ink text-center">
+                  {current.question}
+                </h2>
+              </div>
+              
+              <div className="relative z-10 flex flex-col items-center gap-4">
+                <div className="w-12 h-12 bg-bg-light rounded-full flex items-center justify-center text-brand-primary animate-bounce">
+                  <RotateCcw className="w-5 h-5" />
                 </div>
-              )}
-              <h2 className="text-2xl md:text-3xl font-display leading-tight text-ink">{current.question}</h2>
-            </div>
-            
-            <div className="mt-12 flex flex-col items-center gap-3">
-              <div className="p-3 bg-brand-primary/10 rounded-full">
-                <RotateCcw className="w-5 h-5 text-brand-primary" />
+                <p className="text-[10px] font-black text-stone-300 uppercase tracking-widest">Tap to flip card</p>
               </div>
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Tap to flip card</p>
             </div>
-          </div>
-          <div className="flip-card-back bg-brand-primary">
-            <div className="absolute top-6 left-8 text-white/40 text-[10px] font-bold uppercase tracking-widest">Verified Answer</div>
-            <div className="space-y-6 px-4">
-              <div className="space-y-2">
-                <p className="text-3xl font-display font-black text-white drop-shadow-md">{current.correct_answer}</p>
-                <div className="h-1 w-12 bg-white/30 mx-auto rounded-full"></div>
+
+            {/* Back */}
+            <div className="flip-card-back bg-brand-primary shadow-2xl rounded-[3rem] p-12 flex flex-col justify-between text-white text-center">
+              <div className="space-y-4">
+                <p className="text-[10px] font-black text-white/40 uppercase tracking-widest">Suggested Answer</p>
+                <h3 className="text-5xl font-display font-black drop-shadow-xl">{current.correct_answer}</h3>
+                <div className="w-16 h-1 w-white/20 mx-auto rounded-full"></div>
               </div>
-              <div className="bg-surface/10 p-6 rounded-2xl text-sm border border-white/10 text-white/90 text-left leading-relaxed">
-                <div className="flex items-center justify-between mb-2">
-                  <strong className="text-white font-bold uppercase text-[10px] tracking-widest">Explanation:</strong>
-                  <button 
-                    onClick={(e) => { e.stopPropagation(); onAskAI(`Explain this: ${current.question}. The correct answer is ${current.correct_answer}.`); }}
-                    className="flex items-center gap-1.5 px-2.5 py-1 bg-white/20 hover:bg-surface text-white hover:text-brand-primary rounded-lg text-[10px] font-black uppercase transition-all shadow-sm"
-                  >
-                    <Sparkles className="w-3 h-3" /> Ask AI Tutor
-                  </button>
+
+              <div className="bg-white/10 p-8 rounded-[2rem] border border-white/10 text-left space-y-4">
+                <div className="flex items-center justify-between">
+                   <p className="text-[10px] font-black text-white/60 uppercase tracking-widest">Deep Explanation</p>
+                   <button 
+                     onClick={(e) => { e.stopPropagation(); onAskAI(`Explain this: ${current.question}. Answer: ${current.correct_answer}`); }}
+                     className="bg-white text-brand-primary px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-lg"
+                   >
+                     AI Tutor Help
+                   </button>
                 </div>
-                {current.explanation}
+                <p className="text-sm font-medium leading-relaxed text-white/90">{current.explanation}</p>
               </div>
+
+              <p className="text-[10px] font-black text-white/40 uppercase tracking-widest">Tap to flip back</p>
             </div>
-            <div className="mt-12 text-white/40 text-xs font-bold uppercase tracking-widest animate-bounce">Tap to close</div>
           </div>
         </div>
       </div>
 
-      <div className="flex flex-col gap-4 max-w-2xl mx-auto">
-        <AnimatePresence mode="wait">
-          {flipped && (
-            <motion.div 
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 10 }}
-              className="grid grid-cols-2 gap-4"
-            >
-              <button 
-                onClick={(e) => { e.stopPropagation(); handleAction(true); }}
-                className="p-4 bg-emerald-500 text-white rounded-2xl font-bold hover:bg-emerald-600 transition-all flex flex-col items-center gap-1 shadow-lg shadow-emerald-500/20"
-              >
-                <CheckCircle2 className="w-6 h-6" />
-                <span className="text-xs uppercase tracking-widest">I Know This</span>
-              </button>
-              <button 
-                onClick={(e) => { e.stopPropagation(); handleAction(false); }}
-                className="p-4 bg-slate-border text-ink rounded-2xl font-bold hover:bg-slate-700 hover:text-white transition-all flex flex-col items-center gap-1 shadow-lg"
-              >
-                <AlertCircle className="w-6 h-6" />
-                <span className="text-xs uppercase tracking-widest">Still Learning</span>
-              </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        <div className="flex gap-4">
-          <button 
-            disabled={index === 0}
-            onClick={(e) => {
-              e.stopPropagation();
-              setIndex(i => i - 1);
-              setFlipped(false);
-            }}
-            className="flex-1 btn-secondary group flex items-center justify-center gap-2"
+      <AnimatePresence mode="wait">
+        {flipped ? (
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            className="grid grid-cols-2 gap-6 max-w-2xl mx-auto"
           >
-            <ChevronRight className="w-5 h-5 rotate-180 transition-transform group-hover:-translate-x-1" /> Previous
-          </button>
-          {!flipped && (
             <button 
-              disabled={index === questions.length - 1}
-              onClick={(e) => {
-                e.stopPropagation();
-                setIndex(i => i + 1);
-                setFlipped(false);
-              }}
-              className="flex-1 btn-primary group flex items-center justify-center gap-2"
+              onClick={(e) => { e.stopPropagation(); handleAction(true); }}
+              className="group p-8 bg-emerald-500 text-white rounded-[2rem] font-display font-black text-xl hover:bg-emerald-600 transition-all flex flex-col items-center gap-3 shadow-xl shadow-emerald-500/20 active:scale-95"
             >
-              Next Card <ChevronRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+              <CheckCircle2 className="w-10 h-10 group-hover:scale-110 transition-transform" />
+              I Know This!
             </button>
-          )}
-        </div>
-      </div>
+            <button 
+              onClick={(e) => { e.stopPropagation(); handleAction(false); }}
+              className="group p-8 bg-stone-900 text-white rounded-[2rem] font-display font-black text-xl hover:bg-black transition-all flex flex-col items-center gap-3 shadow-xl shadow-black/20 active:scale-95"
+            >
+              <AlertCircle className="w-10 h-10 group-hover:scale-110 transition-transform text-rose-500" />
+              Study Again
+            </button>
+          </motion.div>
+        ) : (
+          <div className="flex items-center justify-center gap-6">
+            <button 
+              disabled={index === 0}
+              onClick={() => setIndex(i => i - 1)}
+              className="w-16 h-16 rounded-full bg-stone-100 flex items-center justify-center text-stone-400 hover:text-ink disabled:opacity-30 disabled:pointer-events-none transition-all"
+            >
+              <ChevronRight className="w-8 h-8 rotate-180" />
+            </button>
+            <button 
+              onClick={() => setIndex(i => i + 1)}
+              disabled={index === questions.length - 1}
+              className="w-16 h-16 rounded-full bg-stone-100 flex items-center justify-center text-stone-400 hover:text-ink disabled:opacity-30 disabled:pointer-events-none transition-all"
+            >
+              <ChevronRight className="w-8 h-8" />
+            </button>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -1101,23 +1348,53 @@ function QuizModeView({ onBack, questions, onAskAI, onFinish }: {
   onBack: () => void, 
   questions: Question[], 
   onAskAI: (context: string) => void,
-  onFinish: (correct: number, subjectSummary: Record<string, { attempted: number, correct: number }>) => void 
+  onFinish: (correct: number, subjectSummary: Record<string, { attempted: number, correct: number }>, xp: number, time: number) => void 
 }) {
   const [step, setStep] = useState<'config' | 'running' | 'results'>('config');
+  const [quizConfig, setQuizConfig] = useState<{ limit: number, subject: string }>({ limit: 0, subject: 'Mixed' });
   const [quizQuestions, setQuizQuestions] = useState<Question[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [showExplanation, setShowExplanation] = useState(false);
+  const [timer, setTimer] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const [motivation, setMotivation] = useState('');
+
+  const MOTIVATIONS = [
+    "You're on fire! Keep it up! 🔥",
+    "Brilliant thinking! 🧠",
+    "You're becoming a master! ✨",
+    " Ghanaian Excellence in action! 🇬🇭",
+    "Keep pushing, you're doing great! 💪",
+    "Knowledge is power, and you have it! ⚡",
+    "Success is just a few questions away! 🎓"
+  ];
+
+  useEffect(() => {
+    let interval: any;
+    if (step === 'running' && !isPaused && !showExplanation) {
+      interval = setInterval(() => {
+        setTimer(t => t + 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [step, isPaused, showExplanation]);
 
   const startQuiz = (limit: number) => {
-    const shuffled = [...questions].sort(() => 0.5 - Math.random()).slice(0, limit);
+    const shuffled = [...questions].sort(() => 0.5 - Math.random()).slice(0, limit).map(q => ({
+      ...q,
+      options: [...q.options].sort(() => 0.5 - Math.random())
+    }));
     setQuizQuestions(shuffled);
+    setQuizConfig({ ...quizConfig, limit });
+    setTimer(0);
     setStep('running');
   };
 
   const handleSelect = (option: string) => {
-    if (showExplanation) return;
+    if (showExplanation || isPaused) return;
     setAnswers(prev => ({ ...prev, [quizQuestions[currentIndex].id]: option }));
+    setMotivation(MOTIVATIONS[Math.floor(Math.random() * MOTIVATIONS.length)]);
     setShowExplanation(true);
   };
 
@@ -1136,7 +1413,8 @@ function QuizModeView({ onBack, questions, onAskAI, onFinish }: {
         }
       });
 
-      onFinish(correct, subjectSummary);
+      const xpEarned = correct * 25 + (quizConfig.limit >= 50 ? 500 : quizConfig.limit >= 35 ? 250 : 100);
+      onFinish(correct, subjectSummary, xpEarned, timer);
       setStep('results');
     } else {
       setCurrentIndex(i => i + 1);
@@ -1144,29 +1422,99 @@ function QuizModeView({ onBack, questions, onAskAI, onFinish }: {
     }
   };
 
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s.toString().padStart(2, '0')}`;
+  };
+
   if (step === 'config') return (
-    <div className="space-y-8 py-10 animate-in fade-in zoom-in-95 duration-500">
-      <div className="text-center space-y-4">
-        <div className="w-20 h-20 bg-rose-500/10 rounded-[2rem] flex items-center justify-center mx-auto mb-6 shadow-sm border border-rose-500/20">
-          <Zap className="w-10 h-10 text-rose-500 fill-rose-500" />
+    <div className="space-y-12 py-10 animate-in fade-in slide-in-from-bottom-8 duration-700 max-w-5xl mx-auto">
+      <header className="text-center space-y-6">
+        <div className="w-24 h-24 bg-brand-primary rounded-[2.5rem] flex items-center justify-center mx-auto shadow-2xl shadow-brand-primary/40 rotate-12">
+          <Zap className="w-12 h-12 text-white fill-current" />
         </div>
-        <h2 className="text-3xl font-bold text-ink">Quiz Arena</h2>
-        <p className="text-slate-500 max-w-sm mx-auto font-medium">Test your knowledge under pressure and climb the leaderboard.</p>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-2xl mx-auto">
-        {[10, 20, 40].map(n => (
+        <h2 className="text-5xl font-display font-extrabold text-ink">Quiz Arena</h2>
+        <p className="text-stone-500 font-medium text-lg leading-relaxed max-w-2xl mx-auto">
+          Challenge yourself, earn XP, and master your subjects. Choose a mode to begin your training session.
+        </p>
+      </header>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        {[
+          { 
+            id: 'quick', 
+            name: 'Quick Practice', 
+            limit: 20, 
+            time: '15m', 
+            difficulty: 'Easy', 
+            xp: '100+ Bonus XP', 
+            desc: 'Ideal for a quick study break or refresher.', 
+            color: 'bg-emerald-500',
+            icon: Zap 
+          },
+          { 
+            id: 'standard', 
+            name: 'Standard Challenge', 
+            limit: 35, 
+            time: '30m', 
+            difficulty: 'Medium', 
+            xp: '250+ Bonus XP', 
+            desc: 'Test your endurance with a balanced set.', 
+            color: 'bg-brand-primary',
+            icon: Trophy 
+          },
+          { 
+            id: 'full', 
+            name: 'Full Exam Mode', 
+            limit: 50, 
+            time: '45m+', 
+            difficulty: 'Hard', 
+            xp: '500+ Bonus XP', 
+            desc: 'The ultimate prep. Simulates real exam depth.', 
+            color: 'bg-ink',
+            icon: Star 
+          },
+        ].map(mode => (
           <button 
-            key={n}
-            onClick={() => startQuiz(n)}
-            className="bg-surface p-8 rounded-3xl border-2 border-slate-border hover:border-brand-primary transition-all text-center group active:scale-95"
+            key={mode.id}
+            onClick={() => startQuiz(mode.limit)}
+            className="group relative bg-surface p-10 rounded-[3rem] border border-slate-border hover:border-brand-primary transition-all active:scale-95 shadow-sm hover:shadow-2xl text-left flex flex-col justify-between h-full"
           >
-            <div className="text-4xl font-black text-slate-300 md:text-slate-200 mb-2 group-hover:text-brand-primary transition-colors">{n}</div>
-            <span className="font-bold text-slate-400 uppercase text-xs tracking-widest">Questions</span>
+            <div className="space-y-6">
+              <div className={`w-16 h-16 ${mode.color} rounded-2xl flex items-center justify-center text-white shadow-lg`}>
+                <mode.icon className="w-8 h-8" />
+              </div>
+              <div>
+                <h3 className="text-2xl font-display font-black text-ink">{mode.name}</h3>
+                <p className="text-stone-400 font-medium mt-2 leading-relaxed">{mode.desc}</p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <span className="px-3 py-1 bg-bg-light rounded-full text-[10px] font-black uppercase tracking-widest text-stone-400 border border-slate-border">{mode.limit} Qs</span>
+                <span className="px-3 py-1 bg-bg-light rounded-full text-[10px] font-black uppercase tracking-widest text-stone-400 border border-slate-border">{mode.time}</span>
+                <span className="px-3 py-1 bg-bg-light rounded-full text-[10px] font-black uppercase tracking-widest text-stone-400 border border-slate-border">{mode.difficulty}</span>
+              </div>
+            </div>
+            
+            <div className="mt-10 pt-6 border-t border-slate-border flex items-center justify-between">
+              <div>
+                <p className="text-[10px] font-black text-stone-300 uppercase tracking-widest">Rewards</p>
+                <p className="text-brand-primary font-black text-sm">{mode.xp}</p>
+              </div>
+              <ChevronRight className="w-6 h-6 text-stone-200 group-hover:translate-x-1 group-hover:text-brand-primary transition-all" />
+            </div>
           </button>
         ))}
       </div>
-      <div className="text-center">
-        <button onClick={onBack} className="text-slate-400 font-bold uppercase text-xs tracking-widest hover:text-ink">Cancel</button>
+
+      <div className="flex flex-col items-center gap-6">
+          <button onClick={onBack} className="flex items-center gap-2 text-stone-400 font-bold hover:text-ink transition-colors py-4 uppercase tracking-widest text-xs">
+            <X className="w-4 h-4" /> Maybe Later
+          </button>
+          <div className="p-6 bg-brand-primary/5 rounded-[2rem] border border-brand-primary/10 flex items-center gap-4 max-w-lg">
+             <Sparkles className="w-6 h-6 text-brand-primary shrink-0" />
+             <p className="text-sm text-stone-600 font-medium">Daily Challenge Active: Complete a 50Q exam today for a unique badge! 🎖️</p>
+          </div>
       </div>
     </div>
   );
@@ -1174,29 +1522,63 @@ function QuizModeView({ onBack, questions, onAskAI, onFinish }: {
   if (step === 'results') {
     const score = quizQuestions.filter(q => answers[q.id] === q.correct_answer).length;
     const percentage = Math.round((score / quizQuestions.length) * 100);
+    const xpEarned = score * 25 + (quizConfig.limit >= 50 ? 500 : quizConfig.limit >= 35 ? 250 : 100);
 
     return (
-      <div className="space-y-12 py-10 text-center animate-in fade-in zoom-in-95 duration-700">
+      <div className="space-y-16 py-10 text-center animate-in fade-in zoom-in-95 duration-1000 max-w-4xl mx-auto">
         <div className="relative inline-block">
-          <div className="w-56 h-56 rounded-full border-[12px] border-slate-border flex items-center justify-center mx-auto relative overflow-hidden bg-surface shadow-inner">
-            <div className={`absolute bottom-0 left-0 right-0 ${percentage > 70 ? 'bg-emerald-500' : 'bg-brand-primary'} transition-all`} style={{ height: `${percentage}%`, opacity: 0.1 }}></div>
-            <span className={`text-6xl font-black ${percentage > 70 ? 'text-emerald-500' : 'text-brand-primary'}`}>{percentage}%</span>
-          </div>
-          <div className="absolute -top-4 -right-4 p-4 bg-amber-400 rounded-2xl shadow-xl shadow-amber-400/20 rotate-12">
-            <Star className="w-8 h-8 text-white fill-white" />
+          <motion.div 
+            initial={{ scale: 0.5 }}
+            animate={{ scale: 1 }}
+            className="w-72 h-72 rounded-full border-[2rem] border-slate-border flex flex-col items-center justify-center mx-auto relative bg-surface shadow-2xl"
+          >
+            <span className="text-7xl font-display font-black text-ink">{percentage}%</span>
+            <span className="text-xs font-black text-stone-400 uppercase tracking-widest mt-2">{score} / {quizQuestions.length} Correct</span>
+          </motion.div>
+          <motion.div 
+            initial={{ rotate: -20, opacity: 0 }}
+            animate={{ rotate: 12, opacity: 1 }}
+            transition={{ delay: 0.5 }}
+            className="absolute -top-6 -right-6 w-24 h-24 bg-brand-accent rounded-[2.5rem] shadow-2xl shadow-brand-accent/40 flex items-center justify-center border-4 border-white"
+          >
+            <Trophy className="w-12 h-12 text-white" />
+          </motion.div>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-8">
+           <div className="bg-white p-8 rounded-[2.5rem] border border-stone-100">
+              <p className="text-stone-400 font-black uppercase text-[10px] tracking-widest mb-1">Time Spent</p>
+              <p className="text-3xl font-display font-black text-ink">{formatTime(timer)}</p>
+           </div>
+           <div className="bg-ink p-8 rounded-[2.5rem] text-white">
+              <p className="text-white/40 font-black uppercase text-[10px] tracking-widest mb-1">XP Earned</p>
+              <p className="text-3xl font-display font-black text-brand-primary">+{xpEarned}</p>
+           </div>
+           <div className="bg-white p-8 rounded-[2.5rem] border border-stone-100">
+              <p className="text-stone-400 font-black uppercase text-[10px] tracking-widest mb-1">Accuracy</p>
+              <p className="text-3xl font-display font-black text-emerald-500">{percentage}%</p>
+           </div>
+        </div>
+
+        <div className="space-y-6 max-w-2xl mx-auto">
+          <h2 className="text-5xl font-display font-black text-ink">You're Getting Stronger!</h2>
+          <p className="text-stone-500 font-medium text-lg leading-relaxed">
+            {percentage >= 80 
+              ? "Incredible work! You've shown true mastery today. Keep this momentum going!"
+              : "Great effort. Every mistake is a lesson learned. Review your weak areas and try again."}
+          </p>
+          <div className="flex flex-wrap justify-center gap-3">
+             <div className="px-5 py-2 bg-emerald-50 text-emerald-600 rounded-full text-xs font-black uppercase tracking-widest border border-emerald-100">Consistency King</div>
+             <div className="px-5 py-2 bg-blue-50 text-blue-600 rounded-full text-xs font-black uppercase tracking-widest border border-blue-100">Maths Wizard</div>
+             <div className="px-5 py-2 bg-brand-primary/10 text-brand-primary rounded-full text-xs font-black uppercase tracking-widest border border-brand-primary/10">Quiz Veteran</div>
           </div>
         </div>
 
-        <div className="space-y-3">
-          <h2 className="text-4xl font-bold text-ink">Excellent Work!</h2>
-          <p className="text-lg text-slate-500 font-medium">You dominated {score} out of {quizQuestions.length} questions.</p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-md mx-auto">
-          <button onClick={() => setStep('config')} className="btn-primary flex items-center justify-center gap-2 py-4">
-            <RotateCcw className="w-5 h-5" /> Retake Quiz
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+          <button onClick={() => setStep('config')} className="btn-primary py-6 px-12 rounded-[2.5rem] flex items-center justify-center gap-3 w-full sm:w-auto shadow-2xl">
+            <RotateCcw className="w-6 h-6" /> Try New Challenge
           </button>
-          <button onClick={onBack} className="btn-secondary py-4">Finish</button>
+          <button onClick={onBack} className="btn-secondary py-6 px-12 rounded-[2.5rem] text-ink font-black uppercase text-sm tracking-[0.2em] w-full sm:w-auto border-stone-100">Complete Session</button>
         </div>
       </div>
     );
@@ -1205,104 +1587,162 @@ function QuizModeView({ onBack, questions, onAskAI, onFinish }: {
   const current = quizQuestions[currentIndex];
   const selected = answers[current.id];
   const isCorrect = selected === current.correct_answer;
+  const currentScore = quizQuestions.filter(q => answers[q.id] === q.correct_answer).length;
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500 max-w-3xl mx-auto">
-      <div className="flex items-center justify-between gap-6">
-        <div className="flex-1 bg-bg-light h-2.5 rounded-full overflow-hidden border border-slate-border">
-          <motion.div 
-            className="bg-brand-primary h-full"
-            initial={{ width: 0 }}
-            animate={{ width: `${((currentIndex + 1) / quizQuestions.length) * 100}%` }}
-          />
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700 max-w-5xl mx-auto pb-20">
+      {/* HUD Bar */}
+      <div className="flex flex-col md:flex-row md:items-center gap-6">
+        <div className="flex-1 space-y-4">
+           <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                 <button onClick={() => setIsPaused(!isPaused)} className="w-12 h-12 bg-white rounded-2xl border border-stone-100 flex items-center justify-center text-stone-400 hover:text-ink transition-colors shadow-sm">
+                    {isPaused ? <Zap className="w-5 h-5 fill-current" /> : <X className="w-5 h-5" />}
+                 </button>
+                 <div>
+                    <p className="text-[10px] font-black text-stone-300 uppercase tracking-widest">Question</p>
+                    <p className="text-xl font-display font-black text-ink">{currentIndex + 1} <span className="text-stone-300">/</span> {quizQuestions.length}</p>
+                 </div>
+              </div>
+              <div className="text-right">
+                 <p className="text-[10px] font-black text-stone-300 uppercase tracking-widest">Live Score</p>
+                 <p className="text-xl font-display font-black text-brand-primary">{currentScore} Correct</p>
+              </div>
+           </div>
+           <div className="h-4 bg-stone-100 rounded-full overflow-hidden border-4 border-white shadow-inner relative">
+              <motion.div 
+                className="bg-brand-primary h-full rounded-full shadow-lg"
+                initial={{ width: 0 }}
+                animate={{ width: `${((currentIndex + 1) / quizQuestions.length) * 100}%` }}
+              />
+              <div className="absolute inset-0 flex items-center justify-center">
+                 <span className="text-[8px] font-black text-stone-400 uppercase tracking-widest">{Math.round(((currentIndex + 1) / quizQuestions.length) * 100)}% Complete</span>
+              </div>
+           </div>
         </div>
-        <span className="text-lg font-black text-slate-500 font-mono tracking-tighter">{currentIndex + 1} / {quizQuestions.length}</span>
+        <div className="bg-ink rounded-[2rem] p-6 text-white text-center md:w-40 shadow-2xl relative overflow-hidden">
+           <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -mr-10 -mt-10 blur-xl"></div>
+           <p className="text-[10px] font-black text-white/40 uppercase tracking-widest relative z-10 mb-1">Time</p>
+           <p className="text-3xl font-display font-black relative z-10">{formatTime(timer)}</p>
+        </div>
       </div>
 
-      <div className="bg-surface p-10 rounded-[2.5rem] shadow-sm border border-slate-border space-y-10 relative overflow-hidden">
-        <div className="absolute top-0 right-0 p-8 opacity-5">
-           <Zap className="w-32 h-32 text-brand-primary" />
-        </div>
+      <AnimatePresence mode="wait">
+        {isPaused ? (
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            key="paused"
+            className="bg-white p-20 rounded-[4rem] text-center border-4 border-stone-100 shadow-2xl space-y-8"
+          >
+             <div className="w-24 h-24 bg-brand-primary/10 rounded-full flex items-center justify-center mx-auto text-brand-primary">
+                <Zap className="w-12 h-12" />
+             </div>
+             <div className="space-y-2">
+                <h2 className="text-5xl font-display font-black text-ink">Session Paused</h2>
+                <p className="text-stone-400 text-lg">Take a deep breath. Your progress is safe.</p>
+             </div>
+             <button 
+               onClick={() => setIsPaused(false)}
+               className="btn-primary py-6 px-12 rounded-[2.5rem] text-xl"
+             >
+               Resume Challenge
+             </button>
+             <button onClick={onBack} className="block mx-auto text-stone-300 font-bold hover:text-rose-500 uppercase text-xs tracking-widest mt-6">Quit Session</button>
+          </motion.div>
+        ) : (
+          <motion.div 
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -40 }}
+            key={currentIndex}
+            className="space-y-10"
+          >
+      <div className="bg-surface p-12 md:p-16 rounded-[4rem] shadow-2xl shadow-brand-primary/5 border border-slate-border space-y-12 relative overflow-hidden">
+        <div className="absolute -top-12 -right-12 w-64 h-64 bg-bg-light rounded-full"></div>
         
         <div className="relative z-10 space-y-6">
-          <span className="text-[10px] font-bold uppercase tracking-widest px-3 py-1 bg-brand-primary/10 text-brand-primary rounded-lg">{current.subject}</span>
+          <div className="flex items-center gap-4">
+             <div className="px-5 py-2 bg-brand-primary/10 text-brand-primary text-xs font-black uppercase tracking-widest rounded-2xl border border-brand-primary/10">{current.subject}</div>
+             <div className="px-5 py-2 bg-bg-light text-stone-400 text-xs font-black uppercase tracking-widest rounded-2xl border border-slate-border italic">Examination #{current.year}</div>
+          </div>
           {current.passage && (
-            <div className="bg-bg-light p-6 rounded-2xl border border-slate-border text-sm italic text-slate-500 leading-relaxed max-h-60 overflow-y-auto">
+            <div className="bg-bg-light p-10 rounded-[2.5rem] border border-slate-border text-stone-500 italic leading-relaxed text-xl mb-8 max-h-80 overflow-y-auto no-scrollbar shadow-inner">
               {current.passage}
             </div>
           )}
-          <h3 className="text-3xl font-bold mt-6 leading-tight text-ink">{current.question}</h3>
+          <h3 className="text-4xl md:text-5xl font-display font-extrabold leading-[1.1] text-ink">{current.question}</h3>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative z-10">
-          {current.options.map((option, idx) => {
-            const letter = String.fromCharCode(65 + idx);
-            let style = "border-slate-border bg-bg-light/50 hover:bg-surface hover:border-brand-primary hover:shadow-md";
-            let letterStyle = "bg-bg-light text-slate-500 mb-0 group-hover:bg-brand-primary group-hover:text-white";
-            
-            if (showExplanation) {
-              if (option === current.correct_answer) {
-                style = "border-emerald-500 bg-emerald-500/10 text-emerald-500 shadow-sm ring-1 ring-emerald-500/20";
-                letterStyle = "bg-emerald-500 text-white";
-              }
-              else if (option === selected) {
-                style = "border-rose-500 bg-rose-500/10 text-rose-500 shadow-sm ring-1 ring-rose-500/20";
-                letterStyle = "bg-rose-500 text-white";
-              }
-              else style = "opacity-40 border-slate-border pointer-events-none";
-            } else if (selected === option) {
-              style = "border-brand-primary bg-brand-primary/10 text-brand-primary";
-              letterStyle = "bg-brand-primary text-white";
-            }
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
+                {current.options.map((option, idx) => {
+                  const letter = String.fromCharCode(65 + idx);
+                  let stateStyle = "bg-stone-50 border-stone-100 hover:border-brand-primary hover:bg-white hover:shadow-2xl hover:-translate-y-1";
+                  
+                  if (showExplanation) {
+                    if (option === current.correct_answer) stateStyle = "bg-emerald-500 border-emerald-500 text-white shadow-2xl shadow-emerald-500/40";
+                    else if (option === selected) stateStyle = "bg-rose-500 border-rose-500 text-white shadow-2xl shadow-rose-500/40 opacity-40";
+                    else stateStyle = "opacity-20 border-stone-100 scale-95 grayscale";
+                  } else if (selected === option) {
+                    stateStyle = "bg-ink border-ink text-white";
+                  }
 
-            return (
-              <button
-                key={option}
-                onClick={() => handleSelect(option)}
-                className={`w-full p-5 rounded-2xl border-2 text-left font-bold transition-all group flex items-center gap-4 ${style}`}
-              >
-                <span className={`w-10 h-10 rounded-full flex items-center justify-center font-black transition-colors ${letterStyle}`}>{letter}</span>
-                {option}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {showExplanation && (
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="space-y-6"
-        >
-          <div className={`p-8 rounded-[2rem] border-2 flex items-start gap-4 ${isCorrect ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-rose-500/10 border-rose-500/20'}`}>
-            <div className="flex items-start gap-4">
-              <div className={`p-2 rounded-full flex-shrink-0 ${isCorrect ? 'bg-emerald-500/20 text-emerald-500' : 'bg-rose-500/20 text-rose-500'}`}>
-                {isCorrect ? <CheckCircle2 className="w-6 h-6" /> : <AlertCircle className="w-6 h-6" />}
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center justify-between mb-2 gap-4">
-                  <p className={`text-lg font-bold ${isCorrect ? 'text-emerald-500' : 'text-rose-500'}`}>
-                    {isCorrect ? 'Fantastic! You got it right.' : 'Oops, not quite!'}
-                  </p>
-                  <button 
-                     onClick={() => onAskAI(`I answered ${selected} to the question "${current.question}" but the correct answer is ${current.correct_answer}. Please explain why.`)}
-                     className="flex items-center gap-2 px-3 py-1.5 bg-bg-light hover:bg-brand-primary hover:text-white text-slate-500 rounded-xl text-xs font-bold transition-all border border-slate-border"
-                  >
-                    <Bot className="w-4 h-4" /> Explain with AI
-                  </button>
-                </div>
-                <p className={`text-sm leading-relaxed ${isCorrect ? 'text-emerald-600/80' : 'text-rose-600/80'}`}>
-                  {current.explanation}
-                </p>
+                  return (
+                    <button
+                      key={option}
+                      onClick={() => handleSelect(option)}
+                      className={`p-8 rounded-[2rem] border-4 text-left font-bold transition-all flex items-center gap-6 group ${stateStyle}`}
+                    >
+                      <span className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black shrink-0 ${showExplanation || selected === option ? 'bg-white/20' : 'bg-white text-stone-400 group-hover:text-brand-primary border border-stone-100'}`}>{letter}</span>
+                      <span className="text-xl leading-snug">{option}</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
-          </div>
-          <button onClick={next} className="w-full btn-primary py-5 text-lg shadow-xl shadow-brand-primary/20">
-            {currentIndex === quizQuestions.length - 1 ? 'See Results' : 'Continue Practice'}
-          </button>
-        </motion.div>
-      )}
+
+            <AnimatePresence>
+              {showExplanation && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="space-y-8"
+                >
+                  <div className={`p-12 rounded-[3.5rem] border-4 flex flex-col md:flex-row items-center gap-10 shadow-2xl ${isCorrect ? 'bg-emerald-50 border-emerald-100' : 'bg-rose-50 border-rose-100'}`}>
+                     <div className={`w-24 h-24 rounded-[2.5rem] flex items-center justify-center text-5xl shadow-xl shrink-0 ${isCorrect ? 'bg-emerald-500 text-white' : 'bg-rose-500 text-white'}`}>
+                       {isCorrect ? '🎉' : '💡'}
+                     </div>
+                     <div className="flex-1 text-center md:text-left space-y-4">
+                       <h4 className={`text-3xl font-display font-black ${isCorrect ? 'text-emerald-700' : 'text-rose-700'}`}>
+                         {isCorrect ? motivation : 'Not quite. Here\'s the key:'}
+                       </h4>
+                       <p className="text-stone-600 leading-relaxed font-medium text-lg">{current.explanation}</p>
+                       <div className="flex items-center justify-center md:justify-start gap-6 pt-4">
+                          <button 
+                            onClick={() => onAskAI(`Explain this: ${current.question}. Ans: ${current.correct_answer}`)}
+                            className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-brand-primary hover:underline hover:scale-105 transition-all"
+                          >
+                            <Bot className="w-5 h-5" /> Ask Mentor to Explain
+                          </button>
+                          <div className="w-px h-10 bg-stone-200"></div>
+                          <p className="text-[10px] font-black text-stone-300 uppercase tracking-widest">Subject: {current.subject}</p>
+                       </div>
+                     </div>
+                  </div>
+                  <button 
+                    onClick={next} 
+                    className="w-full btn-primary py-8 rounded-[3rem] text-2xl shadow-2xl shadow-brand-primary/30 active:scale-[0.98] transition-all flex items-center justify-center gap-4"
+                  >
+                    {currentIndex === quizQuestions.length - 1 ? 'Unlock My Results' : 'Onward to Success!'}
+                    <ChevronRight className="w-8 h-8" />
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -1339,7 +1779,7 @@ function AITutorModal({ isOpen, onClose, initialContext }: { isOpen: boolean, on
       const response = await askTutor(msg, initialContext, messages);
       setMessages(prev => [...prev, { role: 'ai', text: response }]);
     } catch (e) {
-      setMessages(prev => [...prev, { role: 'ai', text: "Sorry, I'm having trouble connecting right now. Please try again." }]);
+      setMessages(prev => [...prev, { role: 'ai', text: "Oh no, I lost my connection for a second. Can you try saying that again?" }]);
     } finally {
       setLoading(false);
     }
@@ -1354,84 +1794,86 @@ function AITutorModal({ isOpen, onClose, initialContext }: { isOpen: boolean, on
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={onClose}
-        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+        className="absolute inset-0 bg-stone-900/40 backdrop-blur-md"
       />
       <motion.div 
-        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        initial={{ opacity: 0, scale: 0.95, y: 40 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        className="bg-surface w-full max-w-2xl h-[80vh] rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden relative z-10 border border-slate-border"
+        className="bg-surface w-full max-w-2xl h-[85vh] rounded-[3rem] shadow-2xl flex flex-col overflow-hidden relative z-10 border border-slate-border"
       >
-        <header className="p-6 border-b border-slate-border flex items-center justify-between bg-bg-light/50">
-          <div className="flex items-center gap-3">
-             <div className="w-10 h-10 bg-brand-primary rounded-xl flex items-center justify-center shadow-lg shadow-brand-primary/20">
-               <Sparkles className="w-5 h-5 text-white" />
+        <header className="p-8 border-b border-slate-border flex items-center justify-between bg-bg-light/50">
+          <div className="flex items-center gap-4">
+             <div className="w-14 h-14 bg-brand-primary rounded-2xl flex items-center justify-center shadow-xl shadow-brand-primary/20 relative">
+               <Bot className="w-7 h-7 text-white" />
+               <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-white dark:border-stone-800"></div>
              </div>
              <div>
-               <h3 className="font-bold text-ink">Your GH AI Tutor</h3>
-               <p className="text-[10px] uppercase font-bold text-slate-500 tracking-widest">Powered by Gemini AI</p>
+               <h3 className="font-display font-black text-xl text-ink">AI Study Assistant</h3>
+               <p className="text-[10px] uppercase font-black text-brand-primary tracking-widest">Always here to support you</p>
              </div>
           </div>
-          <div className="flex items-center gap-2">
-            {messages.length > 0 && (
-              <button 
-                onClick={() => setMessages([])}
-                className="p-2 text-slate-400 hover:text-rose-500 transition-colors"
-                title="Clear Chat"
-              >
-                <RotateCcw className="w-5 h-5" />
-              </button>
-            )}
-            <button onClick={onClose} className="p-2 bg-bg-light text-slate-400 rounded-xl hover:text-ink transition-colors border border-slate-border">
-              <X className="w-6 h-6" />
-            </button>
-          </div>
+          <button onClick={onClose} className="w-12 h-12 flex items-center justify-center rounded-2xl hover:bg-bg-light transition-colors">
+            <X className="w-6 h-6 text-stone-300" />
+          </button>
         </header>
 
-        <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-6 bg-bg-light/30">
+        <div ref={scrollRef} className="flex-1 overflow-y-auto p-8 space-y-8">
           {messages.length === 0 && !loading && (
-            <div className="text-center py-20 space-y-4">
-              <div className="w-16 h-16 bg-surface rounded-full flex items-center justify-center mx-auto shadow-sm border border-slate-border">
-                <MessageSquare className="w-8 h-8 text-slate-400" />
+            <div className="text-center py-20 space-y-6">
+              <div className="w-20 h-20 bg-bg-light rounded-[2rem] flex items-center justify-center mx-auto border border-slate-border shadow-inner">
+                <Sparkles className="w-10 h-10 text-stone-200" />
               </div>
-              <p className="text-slate-500 font-medium italic">Ask me anything about your syllabus or questions!</p>
+              <div className="space-y-2">
+                <p className="text-xl font-display font-black text-ink">How can I help you today?</p>
+                <p className="text-stone-400 text-sm max-w-xs mx-auto">Ask me about Science, Mathematics, or even help with your coding lessons!</p>
+              </div>
             </div>
           )}
           {messages.map((m, i) => (
-            <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-[85%] p-4 rounded-2xl text-sm leading-relaxed shadow-sm ${
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              key={i} 
+              className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
+            >
+              <div className={`max-w-[85%] p-5 rounded-[1.5rem] shadow-sm text-sm leading-relaxed ${
                 m.role === 'user' 
-                  ? 'bg-brand-primary text-white rounded-tr-none' 
-                  : 'bg-surface text-ink rounded-tl-none border border-slate-border'
+                  ? 'bg-ink text-white dark:bg-stone-100 dark:text-stone-900 rounded-tr-none' 
+                  : 'bg-bg-light text-ink rounded-tl-none border border-slate-border'
               }`}>
                 {m.role === 'ai' ? (
-                  <div className="markdown-body prose prose-sm max-w-none">
+                  <div className="markdown-body prose prose-stone dark:prose-invert prose-sm max-w-none">
                     <ReactMarkdown>{m.text}</ReactMarkdown>
                   </div>
                 ) : (
                   m.text
                 )}
               </div>
-            </div>
+            </motion.div>
           ))}
           {loading && (
             <div className="flex justify-start">
-               <div className="bg-surface p-4 rounded-2xl rounded-tl-none border border-slate-border shadow-sm flex items-center gap-2">
-                 <Loader2 className="w-4 h-4 text-brand-primary animate-spin" />
-                 <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Tutor is thinking...</span>
+               <div className="bg-bg-light p-4 rounded-2xl rounded-tl-none border border-slate-border shadow-sm flex items-center gap-3">
+                 <div className="flex gap-1">
+                    <div className="w-1.5 h-1.5 bg-brand-primary rounded-full animate-bounce"></div>
+                    <div className="w-1.5 h-1.5 bg-brand-primary rounded-full animate-bounce [animation-delay:0.2s]"></div>
+                    <div className="w-1.5 h-1.5 bg-brand-primary rounded-full animate-bounce [animation-delay:0.4s]"></div>
+                 </div>
+                 <span className="text-[10px] font-black text-stone-300 uppercase tracking-widest">Assistant is writing...</span>
                </div>
             </div>
           )}
         </div>
 
-        <div className="p-6 border-t border-slate-border bg-surface">
+        <div className="p-8 bg-surface border-t border-slate-border">
           <form 
             onSubmit={(e) => { e.preventDefault(); handleSend(input); }}
-            className="relative"
+            className="flex gap-4"
           >
             <input 
               type="text" 
-              placeholder="What would you like to know?"
-                className="w-full pl-6 pr-16 py-4 bg-bg-light border-2 border-slate-border rounded-2xl focus:border-brand-primary focus:bg-surface transition-all outline-none text-ink font-medium placeholder:text-slate-500"
+              placeholder="Ask a question or explain a topic..."
+              className="flex-1 px-6 py-5 bg-bg-light border-2 border-transparent rounded-[1.5rem] focus:border-brand-primary focus:bg-surface transition-all outline-none text-ink font-medium placeholder:text-stone-300 shadow-inner"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               disabled={loading}
@@ -1439,11 +1881,12 @@ function AITutorModal({ isOpen, onClose, initialContext }: { isOpen: boolean, on
             <button 
               type="submit"
               disabled={loading || !input.trim()}
-              className="absolute right-2 top-2 bottom-2 px-4 bg-brand-primary text-white rounded-xl font-bold hover:bg-blue-600 transition-all disabled:opacity-50"
+              className="w-16 h-16 bg-brand-primary text-white rounded-[1.5rem] flex items-center justify-center hover:bg-ink transition-all disabled:opacity-50 shadow-xl shadow-brand-primary/20 active:scale-95 shrink-0"
             >
-              <Send className="w-5 h-5" />
+              <Send className="w-6 h-6" />
             </button>
           </form>
+          <p className="text-[10px] text-center mt-4 text-stone-300 font-bold uppercase tracking-widest">Studying for success together 🇬🇭</p>
         </div>
       </motion.div>
     </div>
@@ -1457,152 +1900,241 @@ function StatsView({ user, stats, onBack, onReset }: {
   onReset: () => void
 }) {
   return (
-    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-surface border-2 border-brand-primary p-0.5 shadow-lg shadow-brand-primary/10 overflow-hidden shrink-0">
-             <img 
-               src={user?.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.uid}`} 
-               alt="Profile" 
-               className="w-full h-full object-cover rounded-[0.9rem]" 
-               referrerPolicy="no-referrer"
-             />
+    <div className="space-y-16 animate-in fade-in slide-in-from-bottom-8 duration-700 pb-20">
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-8">
+        <div className="flex items-center gap-6">
+          <div className="relative">
+            <div className="w-24 h-24 rounded-[2rem] bg-surface border-4 border-surface p-1 shadow-2xl shadow-brand-primary/20 overflow-hidden shrink-0 rotate-3 group hover:rotate-0 transition-transform duration-500">
+               <img 
+                 src={user?.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.uid}`} 
+                 alt="Profile" 
+                 className="w-full h-full object-cover rounded-[1.5rem]" 
+                 referrerPolicy="no-referrer"
+               />
+            </div>
+            <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-brand-primary rounded-xl flex items-center justify-center text-white shadow-lg">
+               <Zap className="w-4 h-4 fill-current text-white" />
+            </div>
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-ink">{user?.displayName || 'Mastery Profile'}</h1>
-            <p className="text-slate-500 font-medium">{user?.email || 'AceExams.gh Learner'}</p>
+            <h1 className="text-4xl font-display font-black text-ink">{user?.displayName || 'Learning Legend'}</h1>
+            <p className="text-stone-400 font-bold uppercase text-xs tracking-widest mt-1">Class of 2026 • Ghana Excellence</p>
           </div>
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-4">
           <button 
             onClick={onReset} 
-            className="px-6 py-3 rounded-2xl font-bold text-sm bg-rose-500/10 text-rose-600 border border-rose-500/20 hover:bg-rose-500/20 transition-colors"
+            className="px-8 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest bg-bg-light text-stone-300 hover:text-rose-500 transition-all"
           >
-            Reset Progress
+            Reset
           </button>
-          <button onClick={onBack} className="btn-secondary px-6 py-3 rounded-2xl font-bold text-sm h-fit">Back Home</button>
+          <button onClick={onBack} className="btn-primary px-10 py-4 rounded-2xl text-xs shadow-xl shadow-brand-primary/20">Go Home</button>
         </div>
       </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-1 bg-gradient-to-br from-brand-primary/10 to-indigo-500/10 dark:from-slate-800 dark:to-slate-900 p-10 rounded-[2.5rem] text-ink dark:text-white space-y-8 shadow-sm border border-brand-primary/20 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-brand-primary/5 rounded-full -mr-16 -mt-16 blur-sm opacity-10"></div>
-          <div className="flex items-center justify-between relative z-10">
-            <span className="bg-brand-primary/10 border border-brand-primary/20 px-3 py-1 rounded-lg text-[10px] font-extrabold uppercase tracking-widest text-brand-primary">Learning Streak</span>
-            <Zap className="w-8 h-8 fill-amber-500 text-amber-500" />
-          </div>
-          <div className="space-y-2 relative z-10">
-            <div className="flex items-baseline gap-2">
-              <p className="text-7xl font-bold tracking-tighter">{stats.streak}</p>
-              <p className="text-xl font-bold text-slate-400 dark:text-white/40 uppercase tracking-widest">Days</p>
-            </div>
-            <p className="text-slate-500 dark:text-white/40 font-bold uppercase text-xs tracking-widest leading-relaxed">
-              You're in the top 5% of active students this week! Keep it up.
-            </p>
-          </div>
-          <div className="flex gap-2 relative z-10">
-            {Array.from({ length: 7 }).map((_, i) => (
-              <div key={i} className={`h-1.5 flex-1 rounded-full ${i < stats.streak ? 'bg-amber-400' : 'bg-slate-200 dark:bg-white/5'}`}></div>
-            ))}
-          </div>
-        </div>
-
-        <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="bg-surface p-8 rounded-[2.5rem] border border-slate-border flex flex-col justify-between shadow-sm group hover:border-amber-500 transition-all">
-            <div className="space-y-1">
-              <div className="w-12 h-12 bg-amber-500/10 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <Star className="w-6 h-6 text-amber-600 fill-amber-600" />
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <div className="lg:col-span-1 space-y-8">
+           <div className="bg-stone-900 p-8 rounded-[2.5rem] text-white space-y-6 relative overflow-hidden shadow-2xl">
+              <Star className="absolute -top-6 -right-6 w-32 h-32 opacity-10 rotate-12" />
+              <div className="relative z-10 space-y-2">
+                 <p className="text-white/40 font-black uppercase text-[10px] tracking-widest">Current Rank</p>
+                 <h4 className="text-3xl font-display font-black">Regional Pro</h4>
               </div>
-              <p className="text-slate-400 font-bold uppercase text-[10px] tracking-widest">Experience Points</p>
-              <p className="text-4xl font-bold text-ink tracking-tighter">{stats.points.toLocaleString()}</p>
-            </div>
-            <p className="text-xs text-slate-400 mt-4 font-medium italic">Earned from quizzes & study.</p>
-          </div>
-
-          <div className="bg-surface p-8 rounded-[2.5rem] border border-slate-border flex flex-col justify-between shadow-sm group hover:border-emerald-500 transition-all">
-            <div className="space-y-1">
-              <div className="w-12 h-12 bg-emerald-500/10 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <CheckCircle2 className="w-6 h-6 text-emerald-500" />
+              <div className="relative z-10 flex items-baseline gap-2">
+                 <span className="text-6xl font-display font-black text-brand-primary">{stats.points}</span>
+                 <span className="text-xs font-bold text-white/40 uppercase tracking-widest">XP</span>
               </div>
-              <p className="text-slate-500 font-bold uppercase text-[10px] tracking-widest">Accuracy Record</p>
-              <p className="text-4xl font-bold text-ink tracking-tighter">{stats.totalAttempted > 0 ? Math.round((stats.totalCorrect / stats.totalAttempted) * 100) : 0}%</p>
-            </div>
-            <div className="w-full h-1.5 bg-bg-light rounded-full mt-4 overflow-hidden">
-              <motion.div 
-                className="h-full bg-emerald-500"
-                initial={{ width: 0 }}
-                animate={{ width: `${stats.totalAttempted > 0 ? (stats.totalCorrect / stats.totalAttempted) * 100 : 0}%` }}
-              />
-            </div>
-          </div>
+              <p className="text-xs font-medium text-white/60 leading-relaxed italic">You need 450 more XP to unlock the "National Scholar" title!</p>
+           </div>
+           
+           <div className="bg-surface p-8 rounded-[2.5rem] border border-slate-border shadow-sm space-y-4">
+              <p className="text-stone-400 font-black uppercase text-[10px] tracking-widest">Daily Streak</p>
+              <div className="flex items-center gap-4">
+                 <div className="w-14 h-14 bg-amber-50 dark:bg-amber-500/10 rounded-2xl flex items-center justify-center text-amber-500">
+                    <Zap className="w-8 h-8 fill-current" />
+                 </div>
+                 <div>
+                    <p className="text-4xl font-display font-black text-ink">{stats.streak}</p>
+                    <p className="text-[10px] font-black text-stone-300 uppercase tracking-widest">Day Streak</p>
+                 </div>
+              </div>
+           </div>
         </div>
-      </div>
 
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-ink">Achievements</h2>
-          <div className="px-3 py-1 bg-brand-primary/10 rounded-full text-brand-primary text-xs font-bold ring-1 ring-brand-primary/20">{Math.floor(stats.totalCorrect / 10)} Badges Unlocked</div>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
-          {[1, 5, 10, 20, 50, 100].map(n => {
-            const earned = stats.totalCorrect >= n;
-            return (
-              <motion.div 
-                key={n} 
-                whileHover={earned ? { y: -5 } : {}}
-                className={`relative p-6 rounded-[2rem] flex flex-col items-center justify-center gap-4 border-2 transition-all group ${earned ? 'bg-surface border-amber-500/50 text-amber-500 shadow-lg shadow-amber-500/10' : 'bg-bg-light border-slate-border text-slate-500 opacity-40 grayscale'}`}
-              >
-                <div className={`p-4 rounded-2xl ${earned ? 'bg-amber-500/10' : 'bg-slate-border'}`}>
-                  <Trophy className={`w-10 h-10 ${earned ? 'text-amber-500' : 'text-slate-500'}`} />
-                </div>
-                <div className="text-center">
-                   <p className="text-lg font-black tracking-tighter">{n}</p>
-                   <p className="text-[10px] font-bold uppercase tracking-widest opacity-60">Successes</p>
-                </div>
-                {!earned && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-bg-light/20 backdrop-blur-[1px] rounded-[2rem]">
-                    <X className="w-6 h-6 text-slate-500" />
-                  </div>
-                )}
-              </motion.div>
-            );
-          })}
-        </div>
-      </div>
-
-      <div className="space-y-6">
-        <h2 className="text-2xl font-bold text-ink">Subject Mastery</h2>
-        <div className="bg-surface p-8 rounded-[2.5rem] border border-slate-border shadow-sm">
-          <div className="space-y-8">
-            {[
-              { id: 'math', name: 'Core Mathematics', label: 'Mathematics', color: 'bg-emerald-500' },
-              { id: 'science', name: 'Integrated Science', label: 'Science', color: 'bg-blue-500' },
-              { id: 'english', name: 'English Language', label: 'English', color: 'bg-amber-500' },
-              { id: 'social', name: 'Social Studies', color: 'bg-rose-500' }
-            ].map((sub) => {
-              const data = stats.subjectStats?.[sub.name] || { attempted: 0, correct: 0 };
-              const proficiency = data.attempted > 0 ? Math.round((data.correct / data.attempted) * 100) : 0;
-              
-              return (
-                <div key={sub.id} className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <p className="text-lg font-bold text-ink">{sub.label || sub.name}</p>
-                    <p className="text-lg font-bold text-slate-500">{proficiency}%</p>
-                  </div>
-                  <div className="w-full h-2.5 bg-bg-light rounded-full overflow-hidden border border-slate-border">
+        <div className="lg:col-span-3 grid md:grid-cols-2 gap-8">
+           <div className="bg-surface p-10 rounded-[3rem] border border-slate-border shadow-sm flex flex-col justify-between group hover:border-emerald-500/20 transition-all">
+              <div className="space-y-4">
+                 <div className="w-16 h-16 bg-emerald-50 dark:bg-emerald-500/10 rounded-[1.5rem] flex items-center justify-center text-emerald-500">
+                    <CheckCircle2 className="w-8 h-8" />
+                 </div>
+                 <h3 className="text-2xl font-display font-black text-ink">Accuracy Master</h3>
+                 <p className="text-stone-400 text-sm font-medium">Your current average performance across all mock exams.</p>
+              </div>
+              <div className="mt-8 space-y-2">
+                 <div className="flex items-center justify-between">
+                    <span className="text-4xl font-display font-black text-ink">{stats.totalAttempted > 0 ? Math.round((stats.totalCorrect / stats.totalAttempted) * 100) : 0}%</span>
+                    <span className="text-xs font-black text-stone-300 uppercase tracking-widest">Global Top 10%</span>
+                 </div>
+                 <div className="w-full h-3 bg-bg-light rounded-full overflow-hidden border border-slate-border">
                     <motion.div 
-                      className={`h-full ${sub.color}`}
+                      className="h-full bg-emerald-500 shadow-lg shadow-emerald-500/20"
                       initial={{ width: 0 }}
-                      animate={{ width: `${proficiency}%` }}
-                      transition={{ duration: 0.8, ease: 'easeOut' }}
+                      animate={{ width: `${stats.totalAttempted > 0 ? (stats.totalCorrect / stats.totalAttempted) * 100 : 0}%` }}
                     />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                 </div>
+              </div>
+           </div>
+
+           <div className="bg-surface p-10 rounded-[3rem] border border-slate-border shadow-sm flex flex-col justify-between group hover:border-brand-primary/20 transition-all">
+              <div className="space-y-4">
+                 <div className="w-16 h-16 bg-brand-primary/5 dark:bg-brand-primary/10 rounded-[1.5rem] flex items-center justify-center text-brand-primary">
+                    <Trophy className="w-8 h-8" />
+                 </div>
+                 <h3 className="text-2xl font-display font-black text-ink">Unlocked Awards</h3>
+                 <p className="text-stone-400 text-sm font-medium">Badges earned by consistently practicing and getting high scores.</p>
+              </div>
+              <div className="mt-8 flex -space-x-3">
+                 {stats.badges.length > 0 ? stats.badges.slice(0, 5).map((badge, i) => (
+                    <motion.div 
+                      key={badge.id} 
+                      whileHover={{ y: -5, scale: 1.1 }}
+                      title={badge.name}
+                      className="w-14 h-14 rounded-full border-4 border-surface flex items-center justify-center shadow-lg bg-brand-accent text-2xl"
+                    >
+                       {badge.icon}
+                    </motion.div>
+                 )) : (
+                   <div className="w-full text-stone-300 font-bold text-xs uppercase tracking-widest italic pt-4">No badges yet. Start a quiz!</div>
+                 )}
+                 {stats.badges.length > 5 && (
+                   <div className="w-14 h-14 rounded-full border-4 border-surface bg-bg-light flex items-center justify-center text-stone-300 text-xs font-black">
+                      +{stats.badges.length - 5}
+                   </div>
+                 )}
+              </div>
+           </div>
         </div>
       </div>
+
+      {stats.history && stats.history.length > 0 && (
+        <section className="space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-700">
+          <div className="flex items-center justify-between">
+            <h2 className="text-3xl font-display font-black text-ink">Recent Performance</h2>
+            <p className="text-stone-400 font-bold uppercase text-[10px] tracking-widest">Last {stats.history.length} Sessions</p>
+          </div>
+          <div className="bg-surface rounded-[3rem] border border-slate-border shadow-sm overflow-hidden no-scrollbar overflow-x-auto">
+            <table className="w-full text-left border-collapse min-w-[700px]">
+              <thead>
+                <tr className="bg-bg-light/50">
+                  <th className="px-10 py-6 text-[10px] font-black uppercase tracking-widest text-stone-400 border-b border-slate-border">Test Content</th>
+                  <th className="px-10 py-6 text-[10px] font-black uppercase tracking-widest text-stone-400 border-b border-slate-border">Score</th>
+                  <th className="px-10 py-6 text-[10px] font-black uppercase tracking-widest text-stone-400 border-b border-slate-border">Accuracy</th>
+                  <th className="px-10 py-6 text-[10px] font-black uppercase tracking-widest text-stone-400 border-b border-slate-border">Time</th>
+                  <th className="px-10 py-6 text-[10px] font-black uppercase tracking-widest text-stone-400 border-b border-slate-border">Rewards</th>
+                </tr>
+              </thead>
+              <tbody>
+                {stats.history.map((h) => (
+                  <tr key={h.id} className="hover:bg-bg-light/30 transition-colors group">
+                    <td className="px-10 py-6 border-b border-bg-light">
+                       <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 bg-brand-primary/10 rounded-xl flex items-center justify-center text-brand-primary">
+                             <Zap className="w-5 h-5 fill-current" />
+                          </div>
+                          <div>
+                             <p className="font-bold text-ink">{h.subject}</p>
+                             <p className="text-[10px] text-stone-400 font-bold uppercase tracking-widest">{new Date(h.date).toLocaleDateString()}</p>
+                          </div>
+                       </div>
+                    </td>
+                    <td className="px-10 py-6 border-b border-bg-light">
+                       <span className="font-display font-black text-xl text-ink">{h.score} <span className="text-stone-300">/ {h.total}</span></span>
+                    </td>
+                    <td className="px-10 py-6 border-b border-bg-light">
+                       <div className="flex items-center gap-3">
+                          <div className="flex-1 h-1.5 w-24 bg-bg-light rounded-full overflow-hidden">
+                             <div className="h-full bg-emerald-500" style={{ width: `${(h.score / h.total) * 100}%` }}></div>
+                          </div>
+                          <span className="text-xs font-black text-ink">{Math.round((h.score / h.total) * 100)}%</span>
+                       </div>
+                    </td>
+                    <td className="px-10 py-6 border-b border-bg-light font-bold text-stone-500 text-sm">
+                       {Math.floor(h.duration / 60)}m {h.duration % 60}s
+                    </td>
+                    <td className="px-10 py-6 border-b border-bg-light font-black text-brand-primary text-sm">
+                       +{h.xpEarned} XP
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
+
+      <section className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 space-y-8">
+          <h2 className="text-3xl font-display font-black text-ink">Subject Mastery</h2>
+          <div className="grid md:grid-cols-2 gap-6">
+             {[
+               { id: 'math', name: 'Core Mathematics', label: 'Maths', color: 'bg-emerald-500' },
+               { id: 'science', name: 'Integrated Science', label: 'Science', color: 'bg-brand-primary' },
+               { id: 'english', name: 'English Language', label: 'English', color: 'bg-amber-400' },
+               { id: 'social', name: 'Social Studies', label: 'Social', color: 'bg-rose-500' }
+             ].map((sub) => {
+               const data = stats.subjectStats?.[sub.name] || { attempted: 0, correct: 0 };
+               const proficiency = data.attempted > 0 ? Math.round((data.correct / data.attempted) * 100) : 0;
+               
+                return (
+                  <div key={sub.id} className="bg-surface p-8 rounded-[2.5rem] border border-slate-border shadow-sm space-y-6">
+                    <div className="flex items-center justify-between">
+                       <div className={`w-10 h-10 ${sub.color} rounded-xl shadow-lg ring-4 ring-surface`}></div>
+                       <span className="text-2xl font-display font-black text-ink">{proficiency}%</span>
+                    </div>
+                    <div>
+                       <h4 className="font-display font-black text-stone-500 uppercase text-[10px] tracking-widest">{sub.label}</h4>
+                       <p className="text-stone-300 text-[10px] font-bold mt-1 uppercase tracking-widest">{data.attempted} Questions Practice</p>
+                    </div>
+                    <div className="w-full h-2 bg-bg-light rounded-full overflow-hidden border border-slate-border">
+                       <motion.div 
+                         className={`h-full ${sub.color}`}
+                         initial={{ width: 0 }}
+                         animate={{ width: `${proficiency}%` }}
+                       />
+                    </div>
+                  </div>
+                );
+             })}
+          </div>
+        </div>
+
+        <div className="space-y-8">
+            <h2 className="text-3xl font-display font-black text-ink flex items-center gap-3">
+               Leaderboard <Trophy className="w-6 h-6 text-brand-accent shrink-0" />
+            </h2>
+            <div className="bg-surface rounded-[2.5rem] border border-slate-border p-8 shadow-sm space-y-6">
+               {[
+                 { name: "Prince O.", xp: 45200, seed: "prince", rank: 1 },
+                 { name: "Serwaa K.", xp: 38100, seed: "serwaa", rank: 2 },
+                 { name: "Abena M.", xp: 32400, seed: "abena", rank: 3 },
+                 { name: user?.displayName || "You", xp: stats.points, seed: user?.uid, rank: "12th", isMe: true },
+               ].map((entry, idx) => (
+                 <div key={idx} className={`flex items-center gap-4 p-4 rounded-2xl transition-all ${entry.isMe ? 'bg-brand-primary/5 ring-2 ring-brand-primary/10' : 'hover:bg-bg-light'}`}>
+                    <div className="w-8 font-display font-black text-stone-300 text-sm">{entry.rank}</div>
+                    <div className="w-12 h-12 rounded-xl overflow-hidden border-2 border-surface shadow-sm shrink-0">
+                       <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${entry.seed}`} alt={entry.name} />
+                    </div>
+                    <div className="flex-1">
+                       <p className={`font-bold ${entry.isMe ? 'text-brand-primary' : 'text-ink'} text-sm`}>{entry.name}</p>
+                       <p className="text-[10px] font-black text-stone-300 uppercase tracking-widest">{entry.xp.toLocaleString()} XP</p>
+                    </div>
+                    {entry.rank === 1 && <span className="text-xl">👑</span>}
+                 </div>
+               ))}
+               <button className="w-full text-center py-4 text-[10px] font-black uppercase text-stone-400 hover:text-brand-primary transition-colors tracking-widest border-t border-slate-border mt-4">View Full Global Rankings</button>
+            </div>
+        </div>
+      </section>
     </div>
   );
 }
