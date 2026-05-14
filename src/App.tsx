@@ -33,7 +33,7 @@ import {
 } from 'lucide-react';
 import { Question, UserStats, ExamType, SubjectType } from './types';
 import { QUESTIONS } from './data/questions';
-import { SYLLABUS_DATA } from './data/resources';
+import { SYLLABUS_DATA, SyllabusTopic, Lesson } from './data/resources';
 import { 
   auth, 
   loginWithGoogle, 
@@ -64,9 +64,11 @@ const StatCard = ({ label, value, icon: Icon, color }: { label: string, value: s
 // --- Content Components ---
 
 export default function App() {
-  const [view, setView] = useState<'home' | 'dashboard' | 'study' | 'quiz' | 'resources' | 'stats' | 'auth' | 'community'>('home');
+  const [view, setView] = useState<'home' | 'dashboard' | 'study' | 'quiz' | 'resources' | 'stats' | 'auth' | 'community' | 'courseDetail'>('home');
   const [theme, setTheme] = useState<'light' | 'dark'>(() => (localStorage.getItem('ace_exams_theme') as 'light' | 'dark') || 'light');
   const [aiModal, setAIModal] = useState<{ open: boolean, context: string }>({ open: false, context: '' });
+  const [selectedCourse, setSelectedCourse] = useState<SyllabusTopic | null>(null);
+  const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
 
   // --- New Student Centered Componets ---
 
@@ -797,6 +799,151 @@ export default function App() {
     />
   );
 
+  const renderCourseDetail = () => {
+    if (!selectedCourse) return null;
+
+    return (
+      <div className="space-y-10 animate-in fade-in slide-in-from-bottom-6 duration-700 pb-20">
+        <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div className="space-y-4">
+            <button 
+              onClick={() => setView('resources')}
+              className="flex items-center gap-2 text-stone-400 font-bold text-xs uppercase tracking-widest hover:text-brand-primary transition-colors mb-4"
+            >
+              <RotateCcw className="w-4 h-4" /> Back to Library
+            </button>
+            <h2 className="text-5xl font-display font-extrabold text-ink leading-tight">{selectedCourse.title}</h2>
+            <p className="text-stone-500 text-lg max-w-2xl">{selectedCourse.description}</p>
+          </div>
+          <div className="flex gap-3">
+             <div className="bg-surface px-6 py-4 rounded-2xl border border-slate-border text-center shadow-sm">
+                <p className="text-[10px] font-black text-stone-300 uppercase tracking-widest mb-1">Duration</p>
+                <p className="text-lg font-display font-black text-ink">45m Total</p>
+             </div>
+             <div className="bg-surface px-6 py-4 rounded-2xl border border-slate-border text-center shadow-sm">
+                <p className="text-[10px] font-black text-stone-300 uppercase tracking-widest mb-1">Level</p>
+                <p className="text-lg font-display font-black text-brand-primary">Intermediate</p>
+             </div>
+          </div>
+        </header>
+
+        <div className="grid lg:grid-cols-12 gap-10">
+          {/* Sidebar: Lesson List */}
+          <div className="lg:col-span-4 space-y-4">
+            <h3 className="text-xl font-display font-black text-ink">Syllabus</h3>
+            <div className="space-y-3">
+              {selectedCourse.lessons.map((lesson, idx) => (
+                <button
+                  key={lesson.id}
+                  onClick={() => setSelectedLesson(lesson)}
+                  className={`w-full text-left p-6 rounded-3xl border transition-all flex items-center justify-between group ${
+                    selectedLesson?.id === lesson.id 
+                      ? 'bg-brand-primary border-brand-primary text-white shadow-xl shadow-brand-primary/20' 
+                      : 'bg-surface border-slate-border text-ink hover:border-brand-primary/30'
+                  }`}
+                >
+                  <div className="flex items-center gap-4">
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-display font-black text-sm ${
+                      selectedLesson?.id === lesson.id ? 'bg-white/20' : 'bg-bg-light text-stone-400'
+                    }`}>
+                      {idx + 1}
+                    </div>
+                    <div>
+                      <p className="font-bold text-sm leading-tight">{lesson.title}</p>
+                      <p className={`text-[10px] font-black uppercase tracking-widest mt-1 ${
+                        selectedLesson?.id === lesson.id ? 'text-white/60' : 'text-stone-300'
+                      }`}>
+                        {lesson.duration || '10 mins'}
+                      </p>
+                    </div>
+                  </div>
+                  {selectedLesson?.id === lesson.id && (
+                    <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                      <Zap className="w-4 h-4 fill-current" />
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
+
+            <div className="bg-ink rounded-[2.5rem] p-8 text-white space-y-6 mt-8">
+               <Bot className="w-12 h-12 text-brand-primary" />
+               <p className="font-medium text-sm leading-relaxed text-white/80">Need help with this topic? Ask your AI tutor for a simpler explanation.</p>
+               <button 
+                 onClick={() => setAIModal({ open: true, context: `Explain more about ${selectedLesson?.title || selectedCourse.title}` })}
+                 className="w-full py-4 bg-white/10 hover:bg-white/20 border border-white/10 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all"
+               >
+                 Ask AI Tutor
+               </button>
+            </div>
+          </div>
+
+          {/* Main Content: Lesson Player */}
+          <div className="lg:col-span-8">
+            {selectedLesson ? (
+              <motion.div 
+                key={selectedLesson.id}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="bg-surface rounded-[4rem] border border-slate-border p-12 md:p-16 shadow-sm min-h-[600px] flex flex-col"
+              >
+                <div className="mb-10 flex items-center justify-between">
+                   <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 bg-brand-primary rounded-full animate-pulse"></div>
+                      <span className="text-[10px] font-black text-stone-300 uppercase tracking-widest">Active Study Room</span>
+                   </div>
+                   <div className="flex items-center gap-4">
+                      <button className="text-stone-300 hover:text-brand-primary transition-colors"><Star className="w-5 h-5" /></button>
+                      <button className="text-stone-300 hover:text-brand-primary transition-colors"><Send className="w-5 h-5" /></button>
+                   </div>
+                </div>
+
+                <div className="markdown-body prose prose-stone lg:prose-xl dark:prose-invert max-w-none flex-1">
+                  <ReactMarkdown>{selectedLesson.content}</ReactMarkdown>
+                </div>
+
+                <div className="mt-16 pt-8 border-t border-slate-border flex items-center justify-between">
+                   <div className="flex items-center gap-4">
+                      <div className="flex -space-x-3">
+                        {[1, 2, 3].map(i => (
+                          <div key={i} className="w-8 h-8 rounded-full border-2 border-surface bg-bg-light overflow-hidden shadow-sm">
+                            <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=user${i}`} alt="Student" />
+                          </div>
+                        ))}
+                      </div>
+                      <p className="text-xs font-bold text-stone-400">12 students studying this now</p>
+                   </div>
+                   <button 
+                     onClick={() => {
+                        const currentIndex = selectedCourse.lessons.findIndex(l => l.id === selectedLesson.id);
+                        if (currentIndex < selectedCourse.lessons.length - 1) {
+                          setSelectedLesson(selectedCourse.lessons[currentIndex + 1]);
+                        } else {
+                          // Finish course?
+                          setView('quiz');
+                        }
+                     }}
+                     className="btn-primary px-10 py-4 flex items-center gap-2"
+                   >
+                     {selectedCourse.lessons.findIndex(l => l.id === selectedLesson.id) === selectedCourse.lessons.length - 1 ? 'Start Practice Quiz' : 'Next Lesson'}
+                     <ChevronRight className="w-4 h-4" />
+                   </button>
+                </div>
+              </motion.div>
+            ) : (
+              <div className="h-full flex items-center justify-center p-20 text-center bg-bg-light rounded-[4rem] border-4 border-dashed border-slate-border">
+                 <div className="space-y-4">
+                    <Book className="w-16 h-16 text-stone-200 mx-auto" />
+                    <p className="text-stone-400 font-bold">Select a lesson from the sidebar to start studying.</p>
+                 </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderResources = () => (
     <div className="space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-700 pb-20">
       <header className="space-y-4">
@@ -816,7 +963,13 @@ export default function App() {
             className="group relative"
           >
             <div className="absolute inset-0 bg-brand-primary/5 rounded-[2.5rem] blur-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
-          <div className="bg-surface p-8 rounded-[2.5rem] border border-slate-border shadow-sm space-y-6 hover:border-brand-primary/20 transition-all">
+          <div className="relative z-10 bg-surface p-8 rounded-[2.5rem] border border-slate-border shadow-sm space-y-6 hover:border-brand-primary/20 transition-all cursor-pointer"
+            onClick={() => {
+              setSelectedCourse(subject);
+              setSelectedLesson(subject.lessons[0] || null);
+              setView('courseDetail');
+            }}
+          >
             <div className="flex items-center justify-between">
               <div className="w-14 h-14 bg-bg-light rounded-2xl flex items-center justify-center text-3xl group-hover:bg-brand-primary group-hover:text-white transition-colors duration-500">
                 {subject.subject.toLowerCase().includes('math') ? '🧮' : subject.subject.toLowerCase().includes('science') ? '🧬' : '🌍'}
@@ -832,7 +985,7 @@ export default function App() {
               
               <div>
                 <h3 className="text-2xl font-display font-black text-ink mb-2">{subject.title}</h3>
-                <p className="text-stone-400 font-bold text-xs uppercase tracking-[0.2em]">{subject.subtopics.length} Lessons Available</p>
+                <p className="text-stone-400 font-bold text-xs uppercase tracking-[0.2em]">{subject.lessons.length} Lessons Available</p>
               </div>
 
               <div className="space-y-3">
@@ -844,16 +997,10 @@ export default function App() {
                 ))}
               </div>
 
-              <button 
-                onClick={() => {
-                  setFilters(f => ({ ...f, search: subject.subject }));
-                  setView('dashboard');
-                }}
-                className="w-full btn-primary py-4 rounded-2xl flex items-center justify-center gap-2 group-hover:bg-ink group-hover:ring-4 group-hover:ring-brand-primary/10 transition-all"
-              >
-                Study Course
+              <div className="w-full btn-primary py-4 rounded-2xl flex items-center justify-center gap-2 group-hover:bg-ink group-hover:ring-4 group-hover:ring-brand-primary/10 transition-all">
+                View Lessons
                 <ChevronRight className="w-4 h-4" />
-              </button>
+              </div>
             </div>
           </motion.div>
         ))}
@@ -1023,14 +1170,14 @@ export default function App() {
   );
 
   if (authLoading) return (
-    <div className="min-h-screen bg-bg-light flex items-center justify-center">
-      <Loader2 className="w-8 h-8 text-brand-primary animate-spin" />
-    </div>
-  );
-
-  if (authLoading) return (
     <div className="min-h-screen bg-bg-light flex items-center justify-center text-brand-primary">
-      <Loader2 className="w-10 h-10 animate-spin" />
+      <div className="flex flex-col items-center gap-6">
+        <div className="relative">
+          <div className="w-20 h-20 bg-brand-primary/10 rounded-[2rem] blur-xl absolute -inset-2"></div>
+          <Loader2 className="w-16 h-16 animate-spin relative z-10" />
+        </div>
+        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-stone-300">Synchronizing your progress...</p>
+      </div>
     </div>
   );
 
@@ -1129,6 +1276,7 @@ export default function App() {
               {view === 'study' && renderStudy()}
               {view === 'quiz' && renderQuiz()}
               {view === 'resources' && renderResources()}
+              {view === 'courseDetail' && renderCourseDetail()}
               {view === 'stats' && <StatsView user={user} stats={stats} onBack={() => setView('dashboard')} onReset={handleResetStats} />}
               {view === 'auth' && renderAuth()}
               {view === 'community' && renderCommunity()}
